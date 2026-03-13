@@ -1,0 +1,2 @@
+.textarea { resize: vertical; min-height: 80px; line-height: var(--leading-relaxed); }
+.error { border-color: var(--clr-danger-500) !important; }

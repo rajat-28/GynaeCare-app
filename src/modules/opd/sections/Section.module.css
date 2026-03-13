@@ -1,0 +1,78 @@
+.title { font-family: var(--font-display); font-size: var(--text-2xl); margin-bottom: var(--space-1); }
+.sub   { font-size: var(--text-sm); color: var(--text-muted); margin-bottom: var(--space-6); }
+
+.section { margin-bottom: var(--space-6); padding-bottom: var(--space-6); border-bottom: 1px solid var(--border-default); }
+.section:last-child { border-bottom: none; margin-bottom: 0; }
+
+.sectionTitle {
+  font-size: var(--text-sm); font-weight: var(--weight-semibold); color: var(--text-primary);
+  text-transform: uppercase; letter-spacing: .07em; margin-bottom: var(--space-4);
+  display: flex; align-items: center; gap: var(--space-2);
+}
+.sectionTitle::before {
+  content: ''; width: 3px; height: 14px;
+  background: var(--clr-primary-500); border-radius: var(--radius-full);
+}
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: var(--space-4); }
+.grid4 { display: grid; grid-template-columns: repeat(4,1fr); gap: var(--space-4); }
+
+.chipGrid { display: flex; flex-wrap: wrap; gap: var(--space-2); margin-top: var(--space-2); }
+
+.chip {
+  padding: .375rem .75rem; border-radius: var(--radius-full);
+  border: 1px solid var(--border-default); background: white;
+  font-size: var(--text-sm); cursor: pointer; transition: all var(--transition-fast);
+  color: var(--text-secondary); font-family: var(--font-body);
+}
+.chip:hover   { border-color: var(--clr-primary-300); color: var(--clr-primary-600); background: var(--clr-primary-50); }
+.chipActive   { border-color: var(--clr-primary-500) !important; background: var(--clr-primary-50) !important; color: var(--clr-primary-700) !important; font-weight: var(--weight-medium); }
+
+.checkLabel {
+  display: flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-sm); color: var(--text-secondary); cursor: pointer;
+}
+.checkLabel input { width: 15px; height: 15px; accent-color: var(--clr-primary-600); cursor: pointer; }
+
+.checkRow { display: flex; flex-wrap: wrap; gap: var(--space-4); margin-top: var(--space-3); }
+
+.textarea {
+  width: 100%; padding: var(--space-3); font-family: var(--font-body); font-size: var(--text-sm);
+  color: var(--text-primary); background: var(--surface-input); border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); resize: vertical; outline: none; line-height: var(--leading-relaxed);
+  transition: border-color var(--transition-fast); min-height: 80px;
+}
+.textarea:focus { border-color: var(--border-focus); box-shadow: 0 0 0 3px rgba(236,72,153,.1); }
+
+.textareaLabel { display: block; font-size: var(--text-sm); font-weight: var(--weight-medium); color: var(--text-primary); margin-bottom: var(--space-2); }
+
+/* Medicine / Investigation rows */
+.itemRow {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-3); background: var(--clr-neutral-50);
+  border: 1px solid var(--border-default); border-radius: var(--radius-lg);
+  margin-bottom: var(--space-2);
+}
+.itemRowInput {
+  flex: 1; padding: .375rem .625rem; font-family: var(--font-body); font-size: var(--text-sm);
+  border: 1px solid var(--border-default); border-radius: var(--radius-md);
+  outline: none; background: white;
+}
+.itemRowInput:focus { border-color: var(--border-focus); }
+.removeBtn {
+  width: 28px; height: 28px; border-radius: var(--radius-full); border: none;
+  background: var(--clr-danger-50); color: var(--clr-danger-500);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; transition: all var(--transition-fast);
+}
+.removeBtn:hover { background: var(--clr-danger-500); color: white; }
+
+.addBtn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  padding: var(--space-2) var(--space-4); border: 1px dashed var(--clr-primary-300);
+  border-radius: var(--radius-lg); background: var(--clr-primary-50);
+  color: var(--clr-primary-600); font-size: var(--text-sm); font-family: var(--font-body);
+  cursor: pointer; transition: all var(--transition-fast); margin-top: var(--space-2);
+}
+.addBtn:hover { background: var(--clr-primary-100); border-style: solid; }

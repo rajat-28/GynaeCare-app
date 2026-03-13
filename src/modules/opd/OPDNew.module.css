@@ -1,0 +1,72 @@
+.backBtn {
+  display: inline-flex; align-items: center; gap: var(--space-2);
+  font-size: var(--text-sm); color: var(--text-secondary); background: none;
+  border: none; cursor: pointer; padding: 0; margin-bottom: var(--space-4);
+  transition: color var(--transition-fast);
+}
+.backBtn:hover { color: var(--text-brand); }
+
+.patientStrip {
+  display: flex; align-items: center; gap: var(--space-4);
+  background: white; border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl); padding: var(--space-4) var(--space-5);
+  margin-bottom: var(--space-5); box-shadow: var(--shadow-sm);
+}
+.patientAvatar {
+  width: 44px; height: 44px; border-radius: var(--radius-full);
+  background: linear-gradient(135deg,var(--clr-primary-500),var(--clr-primary-700));
+  color: white; display: flex; align-items: center; justify-content: center;
+  font-weight: var(--weight-bold); font-size: var(--text-sm); flex-shrink: 0;
+}
+.patientName { font-weight: var(--weight-semibold); font-size: var(--text-base); }
+.patientMeta { font-size: var(--text-xs); color: var(--text-muted); margin-top: 2px; }
+
+.dateField { margin-left: auto; display: flex; flex-direction: column; gap: 4px; }
+.dateField label { font-size: var(--text-xs); color: var(--text-muted); font-weight: var(--weight-medium); }
+.dateInput {
+  padding: .375rem .75rem; border: 1px solid var(--border-default);
+  border-radius: var(--radius-lg); font-family: var(--font-body);
+  font-size: var(--text-sm); outline: none;
+}
+.dateInput:focus { border-color: var(--border-focus); }
+
+.stripActions { display: flex; gap: var(--space-3); flex-shrink: 0; }
+
+.layout {
+  display: grid; grid-template-columns: 210px 1fr;
+  gap: var(--space-5); align-items: start;
+}
+
+.sectionNav {
+  background: white; border: 1px solid var(--border-default);
+  border-radius: var(--radius-xl); padding: var(--space-3);
+  display: flex; flex-direction: column; gap: 2px;
+  position: sticky; top: calc(var(--topbar-height) + var(--space-4));
+  box-shadow: var(--shadow-sm);
+}
+
+.navBtn {
+  display: flex; align-items: center; gap: var(--space-3);
+  padding: var(--space-2) var(--space-3); border: none; background: none;
+  border-radius: var(--radius-lg); cursor: pointer; text-align: left;
+  font-family: var(--font-body); font-size: var(--text-sm);
+  color: var(--text-secondary); transition: all var(--transition-fast);
+  white-space: nowrap; overflow: hidden;
+}
+.navBtn:hover { background: var(--surface-hover); color: var(--text-brand); }
+.navActive { background: var(--surface-selected) !important; color: var(--clr-primary-700) !important; font-weight: var(--weight-medium); }
+
+.navNum {
+  width: 22px; height: 22px; border-radius: var(--radius-full);
+  background: var(--clr-neutral-100); color: var(--text-muted);
+  font-size: 11px; font-weight: var(--weight-bold);
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.navActive .navNum { background: var(--clr-primary-500); color: white; }
+
+.formCard {}
+.formFooter {
+  display: flex; justify-content: space-between;
+  margin-top: var(--space-8); padding-top: var(--space-5);
+  border-top: 1px solid var(--border-default);
+}

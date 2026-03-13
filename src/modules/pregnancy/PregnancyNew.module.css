@@ -1,0 +1,74 @@
+.backBtn {
+  display:inline-flex; align-items:center; gap:var(--space-2);
+  font-size:var(--text-sm); color:var(--text-secondary); background:none;
+  border:none; cursor:pointer; padding:0; margin-bottom:var(--space-5);
+  transition:color var(--transition-fast);
+}
+.backBtn:hover { color:var(--text-brand); }
+
+.layout { display:grid; grid-template-columns:1fr 280px; gap:var(--space-5); align-items:start; }
+.left   { display:flex; flex-direction:column; gap:var(--space-4); }
+.right  {}
+
+.card {}
+.cardTitle {
+  font-size:var(--text-sm); font-weight:var(--weight-semibold);
+  text-transform:uppercase; letter-spacing:.07em; color:var(--text-primary);
+  margin-bottom:var(--space-4); display:flex; align-items:center; gap:var(--space-2);
+}
+.cardTitle::before {
+  content:''; width:3px; height:14px;
+  background:var(--clr-primary-500); border-radius:var(--radius-full);
+}
+
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:var(--space-4); }
+.grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:var(--space-4); }
+
+/* EDD box */
+.eddBox {
+  display:flex; align-items:center; gap:var(--space-3);
+  margin-top:var(--space-4); padding:var(--space-3) var(--space-4);
+  background:linear-gradient(135deg, var(--clr-primary-50), var(--clr-teal-50));
+  border:1px solid var(--clr-primary-200); border-radius:var(--radius-lg);
+}
+.eddIcon  { color:var(--clr-primary-500); flex-shrink:0; }
+.eddLabel { font-size:var(--text-xs); color:var(--text-muted); font-weight:var(--weight-medium); }
+.eddValue { font-size:var(--text-lg); font-weight:var(--weight-bold); color:var(--clr-primary-700); }
+
+/* Chips */
+.chipGrid { display:flex; flex-wrap:wrap; gap:var(--space-2); }
+.chip {
+  padding:.375rem .75rem; border-radius:var(--radius-full);
+  border:1px solid var(--border-default); background:white;
+  font-size:var(--text-sm); cursor:pointer; transition:all var(--transition-fast);
+  color:var(--text-secondary); font-family:var(--font-body);
+}
+.chip:hover  { border-color:var(--clr-primary-300); color:var(--clr-primary-600); background:var(--clr-primary-50); }
+.chipActive  { border-color:var(--clr-primary-500) !important; background:var(--clr-primary-50) !important; color:var(--clr-primary-700) !important; font-weight:var(--weight-medium); }
+
+/* Textarea */
+.textarea {
+  width:100%; padding:var(--space-3); font-family:var(--font-body); font-size:var(--text-sm);
+  color:var(--text-primary); background:var(--surface-input); border:1px solid var(--border-default);
+  border-radius:var(--radius-lg); resize:vertical; outline:none; line-height:var(--leading-relaxed);
+  transition:border-color var(--transition-fast); min-height:80px;
+}
+.textarea:focus { border-color:var(--border-focus); box-shadow:0 0 0 3px rgba(236,72,153,.1); }
+
+/* Risk panel */
+.stickyCard {
+  position:sticky; top:calc(var(--topbar-height) + var(--space-4));
+}
+.riskSub  { font-size:var(--text-xs); color:var(--text-muted); margin-bottom:var(--space-4); margin-top:-var(--space-2); }
+.riskList { display:flex; flex-direction:column; gap:var(--space-2); }
+.riskItem {
+  display:flex; align-items:center; gap:var(--space-3);
+  padding:var(--space-3); border-radius:var(--radius-lg);
+  border:1px solid var(--border-default); cursor:pointer;
+  transition:all var(--transition-fast); background:white;
+}
+.riskItem:hover  { border-color:var(--clr-primary-200); background:var(--clr-primary-50); }
+.riskActive { border-color:var(--clr-danger-300) !important; background:var(--clr-danger-50) !important; }
+.riskCheck  { width:15px; height:15px; accent-color:var(--clr-danger-500); cursor:pointer; }
+.riskLabel  { font-size:var(--text-sm); color:var(--text-secondary); flex:1; }
+.cancelBtn  { margin-top:var(--space-2); }

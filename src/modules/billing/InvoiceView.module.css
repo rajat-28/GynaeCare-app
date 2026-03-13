@@ -1,0 +1,37 @@
+.backBtn { display:inline-flex; align-items:center; gap:var(--space-2); font-size:var(--text-sm); color:var(--text-secondary); background:none; border:none; cursor:pointer; padding:0; margin-bottom:var(--space-5); transition:color var(--transition-fast); }
+.backBtn:hover { color:var(--text-brand); }
+
+.layout  { display:grid; grid-template-columns:1fr 180px; gap:var(--space-5); align-items:start; }
+.invoice {}
+.actions { display:flex; flex-direction:column; gap:var(--space-3); position:sticky; top:calc(var(--topbar-height) + var(--space-4)); }
+
+/* Invoice styles */
+.invoiceHeader { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:var(--space-6); }
+.clinicName    { font-family:var(--font-display); font-size:var(--text-2xl); color:var(--text-primary); }
+.clinicSub     { font-size:var(--text-sm); color:var(--text-muted); }
+.clinicContact { font-size:var(--text-xs); color:var(--text-muted); margin-top:var(--space-1); }
+.invoiceMeta   { text-align:right; }
+.invTitle      { font-size:var(--text-xs); font-weight:var(--weight-bold); letter-spacing:.1em; text-transform:uppercase; color:var(--text-muted); }
+.invNum        { font-size:var(--text-2xl); font-weight:var(--weight-bold); color:var(--clr-primary-700); font-family:var(--font-mono); }
+.invDate       { font-size:var(--text-sm); color:var(--text-muted); margin-bottom:var(--space-2); }
+
+.divider { border:none; border-top:1px solid var(--border-default); margin:var(--space-5) 0; }
+
+.patientInfo  { margin-bottom:var(--space-6); }
+.infoLabel    { font-size:var(--text-xs); text-transform:uppercase; letter-spacing:.07em; color:var(--text-muted); margin-bottom:var(--space-1); }
+.infoName     { font-size:var(--text-lg); font-weight:var(--weight-semibold); }
+.infoSub      { font-size:var(--text-sm); color:var(--text-muted); }
+
+.itemTable    { width:100%; border-collapse:collapse; margin-bottom:var(--space-5); }
+.th           { padding:var(--space-3) var(--space-4); font-size:var(--text-xs); font-weight:var(--weight-semibold); text-transform:uppercase; letter-spacing:.06em; color:var(--text-muted); background:var(--clr-neutral-50); border-bottom:1px solid var(--border-default); }
+.itemRow      { border-bottom:1px solid var(--border-default); }
+.itemRow:last-child { border-bottom:none; }
+.td           { padding:var(--space-3) var(--space-4); font-size:var(--text-sm); }
+
+.totals       { margin-left:auto; width:280px; }
+.totalRow     { display:flex; justify-content:space-between; padding:var(--space-2) 0; font-size:var(--text-sm); color:var(--text-secondary); border-bottom:1px dashed var(--border-default); }
+.totalRow:last-child { border-bottom:none; }
+.grandTotal   { font-size:var(--text-lg); font-weight:var(--weight-bold); color:var(--text-primary); border-top:2px solid var(--border-strong); border-bottom:2px solid var(--border-strong); padding:var(--space-3) 0; margin:var(--space-2) 0; }
+
+.footer       { margin-top:var(--space-8); padding-top:var(--space-5); border-top:1px solid var(--border-default); }
+.footerNote   { font-size:var(--text-xs); color:var(--text-muted); text-align:center; } 
