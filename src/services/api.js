@@ -92,3 +92,21 @@ export const consultationApi = {
   getById: (id)  => http.get(`/consultations/${id}`),
   update: (id, data) => http.patch(`/consultations/${id}`, data),
 }
+
+export const fertilityApi = {
+  createCycle: (data) => http.post('/fertility/cycles', data),
+  getCycleById: (id) => http.get(`/fertility/cycles/${id}`),
+  updateCycle: (id, data) => http.patch(`/fertility/cycles/${id}`, data),
+  addFollicularStudy: (data) => http.post('/fertility/follicular-studies', data),
+}
+
+export const ultrasoundApi = {
+  create: (data) => http.post('/ultrasound', data),
+  getById: (id) => http.get(`/ultrasound/${id}`),
+  update: (id, data) => http.patch(`/ultrasound/${id}`, data),
+}
+
+export const procedureApi = {
+  create: (data) => http.post('/procedure', data),
+  addSession: (data) => http.post('/procedure/sessions', data),
+}
