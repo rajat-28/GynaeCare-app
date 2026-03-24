@@ -6,6 +6,12 @@
 .statValue  { font-size:var(--text-3xl); font-weight:var(--weight-bold); line-height:1; margin-bottom:var(--space-1); }
 .statLabel  { font-size:var(--text-xs); color:var(--text-muted); font-weight:var(--weight-medium); text-transform:uppercase; letter-spacing:.05em; }
 
+.toolbar { display:flex; padding:var(--space-4) var(--space-5); border-bottom:1px solid var(--border-default); }
+.searchWrap { position:relative; display:flex; align-items:center; }
+.searchIcon { position:absolute; left:.625rem; color:var(--text-muted); pointer-events:none; }
+.searchInput { padding:.4rem .75rem .4rem 2rem; font-family:var(--font-body); font-size:var(--text-sm); border:1px solid var(--border-default); border-radius:var(--radius-lg); background:var(--clr-neutral-50); width:280px; outline:none; color:var(--text-primary); transition:all var(--transition-fast); }
+.searchInput:focus { border-color:var(--border-focus); background:white; width:320px; box-shadow:0 0 0 3px rgba(236,72,153,.1); }
+
 .pipelineCard  { margin-bottom:var(--space-6); }
 .sectionTitle  { font-size:var(--text-sm); font-weight:var(--weight-semibold); text-transform:uppercase; letter-spacing:.07em; color:var(--text-primary); margin-bottom:var(--space-4); display:flex; align-items:center; gap:var(--space-2); }
 .sectionTitle::before { content:''; width:3px; height:14px; background:var(--clr-primary-500); border-radius:var(--radius-full); }
