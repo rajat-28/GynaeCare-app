@@ -1,10 +1,11 @@
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, X, Save, Package, Search, Info } from 'lucide-react'
+import { ArrowLeft, X, Save, Package, Search, Info, Loader } from 'lucide-react'
 import { Card } from '@components/ui/Card'
 import Button from '@components/ui/Button'
 import Select from '@components/ui/Select'
 import Badge from '@components/ui/Badge'
+import { patientApi, billingApi } from '@services/api'
 import { SERVICE_CATALOG, PACKAGES, PAYMENT_METHODS } from './billingData'
 import styles from './InvoiceNew.module.css'
 
@@ -14,17 +15,13 @@ const DISC_PRESETS = [5, 10, 15]
 
 const FOLLOWUP_SERVICE_IDS = ['S002'] // "Follow-up Consultation" service ID
 
-const MOCK_PATIENTS = [
-  { id:'P001', name:'Priya Sharma', phone:'9876543210', lastVisit:'2026-03-10', lastVisitType:'OPD Consultation' },
-  { id:'P002', name:'Anita Gupta',  phone:'9845012345', lastVisit:'2026-03-09', lastVisitType:'Fertility Cycle'  },
-  { id:'P003', name:'Sunita Rao',   phone:'9712345678', lastVisit:'2026-03-07', lastVisitType:'OPD Consultation' },
-  { id:'P004', name:'Kavya Menon',  phone:'9654321098', lastVisit:'2026-03-06', lastVisitType:'Ultrasound Study' },
-  { id:'P005', name:'Reena Singh',  phone:'9532109876', lastVisit:'2026-03-05', lastVisitType:'OPD Consultation' },
-  { id:'P006', name:'Lakshmi Iyer', phone:'9481234567', lastVisit:'2026-03-20', lastVisitType:'OPD Consultation' },
-]
-
-function daysBetween(dateStr) {
-  return Math.floor((new Date() - new Date(dateStr)) / (1000 * 60 * 60 * 24))
+// Map frontend category labels → backend BillingCategory enum
+const CAT_MAP = {
+  Consultation: 'consultation',
+  Ultrasound:   'ultrasound',
+  Procedure:    'procedure',
+  Lab:          'lab_test',
+  Package:      'package',
 }
 
 export default function InvoiceNew() {
@@ -34,7 +31,9 @@ export default function InvoiceNew() {
   const [patientSearch, setPatientSearch] = useState('')
   const [searchResults, setSearchResults] = useState([])
   const [patient,       setPatient]       = useState(null)
-  const [isFollowUp,    setIsFollowUp]    = useState(false) // within 5 days of OPD
+  const [episodes,      setEpisodes]      = useState([])
+  const [isFollowUp,    setIsFollowUp]    = useState(false)
+  const [searching,     setSearching]     = useState(false)
 
   // Items
   const [items,     setItems]     = useState([])
@@ -42,25 +41,48 @@ export default function InvoiceNew() {
   const [showPkgs,  setShowPkgs]  = useState(false)
 
   // Payment
-  const [discPct,     setDiscPct]     = useState(null)   // 5 / 10 / 15 / null
-  const [paymentPlan, setPaymentPlan] = useState('upfront') // 'upfront' | 'partial' | 'session'
+  const [discPct,     setDiscPct]     = useState(null)
+  const [paymentPlan, setPaymentPlan] = useState('upfront')
   const [payMethod,   setPayMethod]   = useState('Cash')
   const [notes,       setNotes]       = useState('')
 
-  // ── Patient search ──
+  // Save state
+  const [saving,     setSaving]     = useState(false)
+  const [saveError,  setSaveError]  = useState(null)
+  const [ackPayment, setAckPayment] = useState(true)
+
+  // Debounced patient search
+  const debounceRef = useRef(null)
   useEffect(() => {
-    const q = patientSearch.trim().toLowerCase()
+    const q = patientSearch.trim()
     if (q.length < 2) { setSearchResults([]); return }
-    setSearchResults(MOCK_PATIENTS.filter(p =>
-      p.name.toLowerCase().includes(q) || p.phone.includes(q)
-    ))
+    clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      setSearching(true)
+      patientApi.search(q)
+        .then(res => setSearchResults(res.data ?? []))
+        .catch(() => setSearchResults([]))
+        .finally(() => setSearching(false))
+    }, 300)
   }, [patientSearch])
 
-  const selectPatient = p => {
+  const selectPatient = async p => {
     setPatient(p)
     setSearchResults([])
     setPatientSearch('')
-    setIsFollowUp(p.lastVisitType === 'OPD Consultation' && daysBetween(p.lastVisit) <= 5)
+    setIsFollowUp(false) // reset; will be re-evaluated after episodes load
+    // Fetch episodes, then detect follow-up from real data
+    try {
+      const res = await patientApi.getEpisodes(p.id)
+      const fetched = res.data ?? []
+      setEpisodes(fetched)
+      // Follow-up: most recent episode is OPD type and was created within 5 days
+      const latest = fetched[0]
+      if (latest && latest.type === 'opd' && latest.createdAt) {
+        const daysSince = Math.floor((Date.now() - new Date(latest.createdAt)) / 86400000)
+        setIsFollowUp(daysSince <= 5)
+      }
+    } catch { setEpisodes([]) }
   }
 
   // ── Item helpers ──
@@ -198,23 +220,23 @@ export default function InvoiceNew() {
                 {searchResults.length > 0 && (
                   <div className={styles.dropdown}>
                     {searchResults.map(p => {
-                      const fu = p.lastVisitType === 'OPD Consultation' && daysBetween(p.lastVisit) <= 5
                       return (
                         <button key={p.id} className={styles.dropResult} onClick={() => selectPatient(p)}>
                           <div className={styles.drAvatar}>{p.name.split(' ').map(n=>n[0]).join('')}</div>
                           <div className={styles.drInfo}>
                             <div className={styles.drName}>{p.name}</div>
-                            <div className={styles.drMeta}>{p.id} · {p.phone}</div>
-                            <div className={styles.drVisit}>Last: {p.lastVisit} · {p.lastVisitType}</div>
+                            <div className={styles.drMeta}>{p.phone}</div>
                           </div>
-                          {fu && <Badge variant="success" size="sm">Follow-up eligible</Badge>}
                         </button>
                       )
                     })}
                   </div>
                 )}
-                {patientSearch.length >= 2 && searchResults.length === 0 && (
+                {patientSearch.length >= 2 && searchResults.length === 0 && !searching && (
                   <p className={styles.noResults}>No patients found.</p>
+                )}
+                {searching && (
+                  <p className={styles.noResults}>Searching…</p>
                 )}
               </div>
             ) : (
@@ -223,8 +245,7 @@ export default function InvoiceNew() {
                   <div className={styles.spAvatar}>{patient.name.split(' ').map(n=>n[0]).join('')}</div>
                   <div>
                     <div className={styles.spName}>{patient.name}</div>
-                    <div className={styles.spMeta}>{patient.id} · {patient.phone}</div>
-                    <div className={styles.spVisit}>Last: {patient.lastVisit} · {patient.lastVisitType}</div>
+                    <div className={styles.spMeta}>{patient.phone}</div>
                   </div>
                 </div>
                 <button className={styles.clearBtn} onClick={() => { setPatient(null); setIsFollowUp(false) }}>
@@ -410,6 +431,67 @@ export default function InvoiceNew() {
               </div>
             )}
 
+            {/* Acknowledge Payment */}
+            {items.length > 0 && total > 0 && (
+              <div className={styles.ackBox}>
+                <label className={styles.ackToggle}>
+                  <input
+                    type="checkbox"
+                    className={styles.ackCheck}
+                    checked={ackPayment}
+                    onChange={e => setAckPayment(e.target.checked)}
+                  />
+                  <span className={styles.ackLabel}>Acknowledge payment received now</span>
+                </label>
+
+                {ackPayment && (
+                  <div className={styles.ackDetails}>
+                    {paymentPlan === 'upfront' && (
+                      <>
+                        <div className={styles.ackRow}>
+                          <span>✅ Collecting today</span>
+                          <strong style={{ color: 'var(--clr-accent-600)' }}>{fmt(total)}</strong>
+                        </div>
+                        <div className={styles.ackRow} style={{ color: 'var(--clr-accent-600)', fontWeight: 600, fontSize: '0.75rem' }}>
+                          Full payment — invoice will be marked <em>Paid</em>
+                        </div>
+                      </>
+                    )}
+                    {paymentPlan === 'partial' && eligiblePartial && (
+                      <>
+                        <div className={styles.ackRow}>
+                          <span>✅ Collecting today (50%)</span>
+                          <strong style={{ color: 'var(--clr-accent-600)' }}>{fmt(Math.ceil(total / 2))}</strong>
+                        </div>
+                        <div className={styles.ackRow}>
+                          <span>⏳ Balance due later</span>
+                          <strong style={{ color: 'var(--clr-danger-500)' }}>{fmt(Math.floor(total / 2))}</strong>
+                        </div>
+                        <div className={styles.ackRow} style={{ color: 'var(--clr-warning-600)', fontWeight: 600, fontSize: '0.75rem' }}>
+                          Invoice will be marked <em>Partial</em> — due amount shown in dashboard
+                        </div>
+                      </>
+                    )}
+                    {paymentPlan === 'session' && hasMultiSession && (
+                      <>
+                        <div className={styles.ackRow}>
+                          <span>✅ Collecting session 1</span>
+                          <strong style={{ color: 'var(--clr-accent-600)' }}>{fmt(perSessionAmt)}</strong>
+                        </div>
+                        <div className={styles.ackRow}>
+                          <span>⏳ Remaining ({sessionCount - 1} sessions)</span>
+                          <strong style={{ color: 'var(--clr-danger-500)' }}>{fmt(perSessionAmt * (sessionCount - 1))}</strong>
+                        </div>
+                        <div className={styles.ackRow} style={{ color: 'var(--clr-warning-600)', fontWeight: 600, fontSize: '0.75rem' }}>
+                          Invoice will be marked <em>Partial</em> — balance shown in dashboard
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Notes */}
             <div style={{ marginTop: 'var(--space-4)' }}>
               <label className={styles.notesLabel}>Notes</label>
@@ -420,12 +502,77 @@ export default function InvoiceNew() {
 
             <div className={styles.footer}>
               <Button variant="secondary" onClick={() => navigate('/billing')}>Cancel</Button>
-              <Button icon={Save}
-                disabled={!patient || items.length === 0}
-                onClick={() => { alert('Invoice saved!'); navigate('/billing') }}>
-                Save Invoice
+              <Button icon={saving ? Loader : Save}
+                disabled={!patient || items.length === 0 || saving}
+                onClick={async () => {
+                  setSaving(true)
+                  setSaveError(null)
+                  try {
+                    // Resolve episodeId — use latest active episode, or create one
+                    let episodeId = episodes.find(e => e.episodeStatus === 'active')?.id
+                    if (!episodeId) {
+                      const epRes = await patientApi.addEpisode(patient.id, {
+                        type: 'opd',
+                        title: 'General OPD',
+                      })
+                      episodeId = epRes.data.id
+                    }
+
+                    // Map payment method to PaymentMode enum
+                    const PAY_MODE_MAP = {
+                      'Cash':               'cash',
+                      'UPI':                'upi',
+                      'Card':               'card',
+                      'NEFT / Bank Transfer':'net_banking',
+                      'Insurance':          'cash',
+                      'Cheque':             'cheque',
+                    }
+
+                    const dto = {
+                      patientId:      patient.id,
+                      episodeId,
+                      discountAmount: discAmt,
+                      items: items.map(item => ({
+                        description: item.name,
+                        quantity:    item.qty,
+                        unitPrice:   isFollowUpItem(item) ? 0 : item.rate,
+                        taxRate:     0,
+                        category:    CAT_MAP[item.category] ?? 'other',
+                      })),
+                    }
+
+                    const res = await billingApi.create(dto)
+
+                    // Record initial payment if acknowledged
+                    if (ackPayment && total > 0) {
+                      const paidNow =
+                        paymentPlan === 'partial'  ? Math.ceil(total / 2) :
+                        paymentPlan === 'session'  ? perSessionAmt :
+                        total // upfront
+                      await billingApi.recordPayment({
+                        invoiceId:   res.data.id,
+                        amount:      paidNow,
+                        paymentDate: new Date().toISOString().split('T')[0],
+                        paymentMode: PAY_MODE_MAP[payMethod] ?? 'cash',
+                        notes,
+                      })
+                    }
+
+                    navigate('/billing')
+                  } catch (err) {
+                    setSaveError(err?.response?.data?.message ?? 'Failed to save invoice. Please try again.')
+                  } finally {
+                    setSaving(false)
+                  }
+                }}>
+                {saving ? 'Saving…' : 'Save Invoice'}
               </Button>
             </div>
+            {saveError && (
+              <p style={{ color: 'var(--clr-danger-500)', fontSize: '0.8rem', marginTop: 'var(--space-2)' }}>
+                {saveError}
+              </p>
+            )}
           </Card>
         </div>
       </div>

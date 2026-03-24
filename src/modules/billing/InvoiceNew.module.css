@@ -2,7 +2,6 @@
 .backBtn:hover { color:var(--text-brand); }
 
 .layout { display:grid; grid-template-columns:1fr 400px; gap:var(--space-5); align-items:start; }
-.left   {}
 .right  { display:flex; flex-direction:column; gap:var(--space-4); }
 
 .cardHead { display:flex; align-items:center; justify-content:space-between; margin-bottom:var(--space-4); }
@@ -122,3 +121,45 @@
 .textarea   { width:100%; padding:var(--space-3); font-family:var(--font-body); font-size:var(--text-sm); color:var(--text-primary); background:var(--surface-input); border:1px solid var(--border-default); border-radius:var(--radius-lg); resize:vertical; outline:none; line-height:var(--leading-relaxed); transition:border-color var(--transition-fast); }
 .textarea:focus { border-color:var(--border-focus); box-shadow:0 0 0 3px rgba(236,72,153,.1); }
 .footer { display:flex; justify-content:flex-end; gap:var(--space-3); margin-top:var(--space-5); padding-top:var(--space-4); border-top:1px solid var(--border-default); }
+
+/* Acknowledge Payment */
+.ackBox {
+  margin-top: var(--space-4);
+  border: 1.5px solid var(--clr-primary-200);
+  border-radius: var(--radius-xl);
+  background: var(--clr-primary-50);
+  overflow: hidden;
+}
+.ackToggle {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+}
+.ackCheck {
+  width: 16px; height: 16px;
+  accent-color: var(--clr-primary-500);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.ackLabel {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--clr-primary-700);
+}
+.ackDetails {
+  border-top: 1px solid var(--clr-primary-200);
+  padding: var(--space-3) var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  background: white;
+}
+.ackRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--text-sm);
+  color: var(--text-secondary);
+}

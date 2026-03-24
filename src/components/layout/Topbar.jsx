@@ -63,17 +63,17 @@ export default function Topbar({ collapsed }) {
       style={{ left: collapsed ? 'var(--sidebar-collapsed-width)' : 'var(--sidebar-width)' }}
     >
       {/* Search */}
-      <div className={styles.search}>
+      {/* <div className={styles.search}>
         <Search size={15} className={styles.searchIcon} />
         <input className={styles.searchInput} placeholder="Search patients, records..." type="search" />
-      </div>
+      </div> */}
 
       {/* Right */}
       <div className={styles.right}>
-        <button className={styles.iconBtn} aria-label="Notifications">
+        {/* <button className={styles.iconBtn} aria-label="Notifications">
           <Bell size={18} strokeWidth={1.75} />
           <span className={styles.badge}>3</span>
-        </button>
+        </button> */}
 
         {/* Profile dropdown */}
         <div className={styles.profileWrap} ref={dropRef}>
@@ -96,12 +96,12 @@ export default function Topbar({ collapsed }) {
                   <div className={styles.dropEmail}>{user?.email}</div>
                 </div>
               </div>
-              <hr className={styles.dropDivider}/>
-              <button className={styles.dropItem}>
+              <hr className={styles.dropDivider} />
+              {/* <button className={styles.dropItem}>
                 <User size={14}/> My Profile
-              </button>
+              </button> */}
               <button className={`${styles.dropItem} ${styles.dropLogout}`} onClick={handleLogout}>
-                <LogOut size={14}/> Sign out
+                <LogOut size={14} /> Sign out
               </button>
             </div>
           )}

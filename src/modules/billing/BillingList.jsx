@@ -1,40 +1,80 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus, Search, Download, TrendingUp } from 'lucide-react'
 import { Card } from '@components/ui/Card'
 import Button from '@components/ui/Button'
 import Badge from '@components/ui/Badge'
 import Table from '@components/ui/Table'
+import { billingApi } from '@services/api'
 import { INVOICE_STATUS } from './billingData'
 import styles from './BillingList.module.css'
 
-const MOCK_INVOICES = [
-  { id: 'INV001', patient: 'Priya Sharma',  patientId: 'P001', date: '10 Mar 2026', services: 'OPD Consultation, Dating Scan', amount: 1700,  paid: 1700,  status: 'paid'     },
-  { id: 'INV002', patient: 'Anita Gupta',   patientId: 'P002', date: '09 Mar 2026', services: 'Follicular Study × 2',          amount: 1600,  paid: 800,   status: 'partial'  },
-  { id: 'INV003', patient: 'Deepa Nair',    patientId: 'P003', date: '08 Mar 2026', services: 'NT Scan, Growth Scan',           amount: 3000,  paid: 0,     status: 'pending'  },
-  { id: 'INV004', patient: 'Kavya Menon',   patientId: 'P004', date: '07 Mar 2026', services: 'Laser Vaginal Tightening',       amount: 15000, paid: 15000, status: 'paid'     },
-  { id: 'INV005', patient: 'Reena Singh',   patientId: 'P005', date: '20 Mar 2026', services: 'ANC Package',                   amount: 8000,  paid: 4000,  status: 'partial'  },
-  { id: 'INV006', patient: 'Lakshmi Iyer',  patientId: 'P006', date: '05 Mar 2026', services: 'IUI Procedure',                 amount: 8000,  paid: 8000,  status: 'paid'     },
-]
+// Extend status map to handle backend values not in billingData
+const STATUS_MAP = {
+  ...INVOICE_STATUS,
+  issued: { label: 'Pending', variant: 'danger' },
+  overdue: { label: 'Overdue', variant: 'danger' },
+}
 
-const fmt = n => `₹${n.toLocaleString('en-IN')}`
+const fmt = n => `₹${Number(n).toLocaleString('en-IN')}`
+
+function formatDate(dateStr) {
+  if (!dateStr) return '—'
+  return new Date(dateStr).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+}
 
 export default function BillingList() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
+  const [invoices, setInvoices] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const [filter, setFilter] = useState('All')
 
-  const filtered = MOCK_INVOICES.filter(i =>
-    i.patient.toLowerCase().includes(search.toLowerCase()) ||
-    i.id.toLowerCase().includes(search.toLowerCase())
-  )
+  useEffect(() => {
+    setLoading(true)
+    billingApi.getAll()
+      .then(res => setInvoices(res.data.invoices ?? []))
+      .catch(() => setError('Failed to load invoices.'))
+      .finally(() => setLoading(false))
+  }, [])
 
-  const totalRevenue  = MOCK_INVOICES.reduce((s,i) => s + i.paid, 0)
-  const totalPending  = MOCK_INVOICES.reduce((s,i) => s + (i.amount - i.paid), 0)
-  const totalInvoiced = MOCK_INVOICES.reduce((s,i) => s + i.amount, 0)
+  // Map backend invoice → row shape
+  const rows = invoices.map(inv => ({
+    id: inv.id,
+    invoiceNo: inv.invoiceNumber,
+    patient: inv.patient?.name ?? '—',
+    patientId: inv.patient?.id ?? '—',
+    date: formatDate(inv.createdAt),
+    services: inv.items?.map(i => i.description).join(', ') || '—',
+    amount: Number(inv.netAmount),
+    paid: Number(inv.paidAmount),
+    status: inv.status,
+  }))
+
+  const filtered = rows.filter(i => {
+    const matchSearch = (
+      i.patient.toLowerCase().includes(search.toLowerCase()) ||
+      i.invoiceNo?.toLowerCase().includes(search.toLowerCase())
+    )
+    const matchFilter = filter === 'All' || i.status === filter.toLowerCase()
+    return matchSearch && matchFilter
+  })
+
+  const now = new Date()
+  const thisMonthInvoices = invoices.filter(inv => {
+    const d = new Date(inv.createdAt)
+    return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear()
+  })
+
+  const totalInvoiced = rows.reduce((s, i) => s + i.amount, 0)
+  const totalRevenue = rows.reduce((s, i) => s + i.paid, 0)
+  const totalPending = rows.reduce((s, i) => s + (i.amount - i.paid), 0)
+  const thisMonthTotal = thisMonthInvoices.reduce((s, i) => s + Number(i.netAmount), 0)
 
   const COLUMNS = [
     {
-      key: 'id', label: 'Invoice',
+      key: 'invoiceNo', label: 'Invoice',
       render: (val, row) => (
         <div>
           <div className={styles.invoiceId}>{val}</div>
@@ -46,10 +86,10 @@ export default function BillingList() {
       key: 'patient', label: 'Patient',
       render: (val, row) => (
         <div className={styles.patientCell}>
-          <div className={styles.avatar}>{val.split(' ').map(n=>n[0]).join('')}</div>
+          <div className={styles.avatar}>{val.split(' ').map(n => n[0]).join('')}</div>
           <div>
             <div className={styles.name}>{val}</div>
-            <div className={styles.sub}>{row.patientId}</div>
+            <div className={styles.sub}>{row.patientId?.slice(0, 8)}…</div>
           </div>
         </div>
       )
@@ -58,7 +98,7 @@ export default function BillingList() {
     {
       key: 'amount', label: 'Amount', align: 'right',
       render: (val, row) => (
-        <div style={{textAlign:'right'}}>
+        <div style={{ textAlign: 'right' }}>
           <div className={styles.amount}>{fmt(val)}</div>
           {row.paid < val && (
             <div className={styles.outstanding}>Due: {fmt(val - row.paid)}</div>
@@ -69,7 +109,7 @@ export default function BillingList() {
     {
       key: 'status', label: 'Status',
       render: v => {
-        const s = INVOICE_STATUS[v]
+        const s = STATUS_MAP[v] ?? { label: v, variant: 'default' }
         return <Badge variant={s.variant} dot>{s.label}</Badge>
       }
     },
@@ -91,15 +131,15 @@ export default function BillingList() {
       {/* Revenue stats */}
       <div className={styles.statsRow}>
         {[
-          { label: 'Total Invoiced',  value: fmt(totalInvoiced), color: 'var(--text-primary)',         icon: '📋' },
-          { label: 'Collected',       value: fmt(totalRevenue),  color: 'var(--clr-accent-600)',        icon: '✅' },
-          { label: 'Outstanding',     value: fmt(totalPending),  color: 'var(--clr-danger-500)',        icon: '⏳' },
-          { label: 'This Month',      value: '₹68,400',          color: 'var(--clr-primary-600)',       icon: '📈' },
+          { label: 'Total Invoiced', value: fmt(totalInvoiced), color: 'var(--text-primary)', icon: '📋' },
+          { label: 'Collected', value: fmt(totalRevenue), color: 'var(--clr-accent-600)', icon: '✅' },
+          { label: 'Outstanding', value: fmt(totalPending), color: 'var(--clr-danger-500)', icon: '⏳' },
+          { label: 'This Month', value: fmt(thisMonthTotal), color: 'var(--clr-primary-600)', icon: '📈' },
         ].map(s => (
           <Card key={s.label} padding="md" className={styles.statCard}>
             <div className={styles.statTop}>
               <span className={styles.statEmoji}>{s.icon}</span>
-              <TrendingUp size={14} className={styles.statTrend}/>
+              {/* <TrendingUp size={14} className={styles.statTrend}/> */}
             </div>
             <div className={styles.statValue} style={{ color: s.color }}>{s.value}</div>
             <div className={styles.statLabel}>{s.label}</div>
@@ -110,18 +150,26 @@ export default function BillingList() {
       <Card padding="none">
         <div className={styles.toolbar}>
           <div className={styles.searchWrap}>
-            <Search size={14} className={styles.searchIcon}/>
+            <Search size={14} className={styles.searchIcon} />
             <input className={styles.searchInput} placeholder="Search invoice or patient..."
-              value={search} onChange={e => setSearch(e.target.value)}/>
+              value={search} onChange={e => setSearch(e.target.value)} />
           </div>
           <div className={styles.filters}>
-            {['All','Paid','Partial','Pending'].map(f => (
-              <button key={f} className={styles.filterBtn}>{f}</button>
+            {['All', 'Paid', 'Partial', 'Pending', 'issued', 'overdue'].map(f => (
+              <button key={f}
+                className={`${styles.filterBtn} ${filter === f ? styles.filterActive : ''}`}
+                onClick={() => setFilter(f)}>
+                {f.charAt(0).toUpperCase() + f.slice(1)}
+              </button>
             ))}
           </div>
         </div>
-        <Table columns={COLUMNS} data={filtered}
-          onRowClick={row => navigate(`/billing/${row.id}`)}/>
+        {loading && <p style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--text-secondary)' }}>Loading invoices…</p>}
+        {error && <p style={{ padding: 'var(--space-6)', textAlign: 'center', color: 'var(--clr-danger-500)' }}>{error}</p>}
+        {!loading && !error && (
+          <Table columns={COLUMNS} data={filtered}
+            onRowClick={row => navigate(`/billing/${row.id}`)} />
+        )}
       </Card>
     </div>
   )

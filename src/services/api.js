@@ -59,6 +59,11 @@ export const pregnancyApi = {
   createVisit:   (data) => http.post('/pregnancies/visits', data),
 }
 
+export const billingApi = {
+  getAll:        (params)  => http.get('/billing/invoices', { params }),
+  getById:       (id)      => http.get(`/billing/invoices/${id}`),
+  create:        (data)    => http.post('/billing/invoices', data),
+  recordPayment: (data)    => http.post('/billing/payments', data),
 export const appointmentApi = {
   getAll:         () => http.get('/appointments'),
   getByPatientId: (patientId) => http.get(`/appointments/patient/${patientId}`),
