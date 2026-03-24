@@ -5,13 +5,15 @@ import Button from '@components/ui/Button'
 import { Card, CardHeader, CardTitle, CardBody } from '@components/ui/Card'
 import Input from '@components/ui/Input'
 import Select from '@components/ui/Select'
-import { patientApi } from '@services/api'
+import { patientApi, appointmentApi } from '@services/api'
 import { EPISODE_TYPES } from './patientData'
 import styles from './PatientProfile.module.css'
+import { useAuth } from '@/store/index'
 
 export default function EpisodeNew() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   
   const [data, setData] = useState({
     episodeType: 'opd',
@@ -50,6 +52,16 @@ export default function EpisodeNew() {
         type: data.episodeType,
         title: data.notes || undefined,
       })
+
+      if (user?.id) {
+        await appointmentApi.create({
+          patientId: id,
+          doctorId: user.id,
+          appointmentDate: new Date().toISOString(),
+          reason: data.notes || 'New Episode Started',
+          type: 'consultation'
+        })
+      }
 
       // After successful creation, navigate back to Patient profile
       navigate(`/patients/${id}`)

@@ -7,8 +7,9 @@ import StepBasicInfo    from './steps/StepBasicInfo'
 import StepGynaeHistory from './steps/StepGynaeHistory'
 import StepPartnerInfo  from './steps/StepPartnerInfo'
 import StepReview       from './steps/StepReview'
-import { patientApi }   from '@services/api'
+import { patientApi, appointmentApi } from '@services/api'
 import styles from './PatientNew.module.css'
+import { useAuth } from '@/store/index'
 
 const STEPS = [
   { id: 1, label: 'Basic Info',      icon: User,     component: StepBasicInfo    },
@@ -38,6 +39,7 @@ const INITIAL_DATA = {
 
 export default function PatientNew() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [step,    setStep]   = useState(1)
   const [data,    setData]   = useState(INITIAL_DATA)
   const [saving,  setSaving] = useState(false)
@@ -96,6 +98,17 @@ export default function PatientNew() {
           type:  data.episodeType,
           title: data.notes || undefined,
         })
+
+        // Also create appointment with current time
+        if (user?.id) {
+          await appointmentApi.create({
+            patientId: newPatient.id,
+            doctorId: user.id,
+            appointmentDate: new Date().toISOString(),
+            reason: data.notes || 'New Patient Consultation',
+            type: 'consultation'
+          })
+        }
       }
 
       // 3. Add partner if partner name provided

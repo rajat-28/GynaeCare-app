@@ -105,29 +105,19 @@ export default function PatientList() {
     },
     {
       key: 'episodes', label: 'Add Episode',
-      render: (v, row) => {
-        const latest = Array.isArray(v) ? v[0] : null
-        return (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            {latest && (
-              <Badge variant={EPISODE_VARIANT[latest.type] || 'default'}>
-                {EPISODE_LABEL[latest.type] || latest.type}
-              </Badge>
-            )}
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={(e) => {
-                e.stopPropagation()
-                navigate(`/patients/${row.id}/episodes/new`)
-              }}
-              style={{ padding: '0 8px', height: '24px', fontSize: '12px', minWidth: 'auto' }}
-            >
-              Add
-            </Button>
-          </div>
-        )
-      }
+      render: (_, row) => (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={(e) => {
+            e.stopPropagation()
+            navigate(`/patients/${row.id}/episodes/new`)
+          }}
+          style={{ padding: '0 8px', height: '24px', fontSize: '12px', minWidth: 'auto' }}
+        >
+          Add
+        </Button>
+      )
     },
   ]
 

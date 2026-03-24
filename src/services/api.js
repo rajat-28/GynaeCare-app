@@ -58,3 +58,23 @@ export const pregnancyApi = {
   getVisitById:  (id) => http.get(`/pregnancies/visits/${id}`),
   createVisit:   (data) => http.post('/pregnancies/visits', data),
 }
+
+export const appointmentApi = {
+  getAll:         () => http.get('/appointments'),
+  getByPatientId: (patientId) => http.get(`/appointments/patient/${patientId}`),
+  getById:        (id) => http.get(`/appointments/${id}`),
+  create:         (data) => http.post('/appointments', data),
+  update:         (id, data) => http.patch(`/appointments/${id}`, data),
+  delete:         (id) => http.delete(`/appointments/${id}`),
+}
+
+export const episodeApi = {
+  getAll:  (type) => http.get('/episodes' + (type ? `?type=${type}` : '')),
+  getById: (id)   => http.get(`/episodes/${id}`),
+}
+
+export const consultationApi = {
+  create: (data) => http.post('/consultations', data),
+  getById: (id)  => http.get(`/consultations/${id}`),
+  update: (id, data) => http.patch(`/consultations/${id}`, data),
+}

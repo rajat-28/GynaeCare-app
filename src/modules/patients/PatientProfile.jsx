@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft, Phone, Calendar, User, AlertCircle } from 'lucide-react'
 import { Card, CardHeader, CardTitle, CardBody } from '@components/ui/Card'
 import Badge from '@components/ui/Badge'
@@ -13,12 +13,15 @@ const EPISODE_VARIANT = {
 }
 
 export default function PatientProfile() {
-  const { id }     = useParams()
-  const navigate   = useNavigate()
-  const [patient,  setPatient]  = useState(null)
+  const { id } = useParams()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const fromOPD = location.state?.fromOPD
+
+  const [patient, setPatient] = useState(null)
   const [episodes, setEpisodes] = useState([])
-  const [loading,  setLoading]  = useState(true)
-  const [error,    setError]    = useState('')
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
 
   useEffect(() => {
     const load = async () => {
@@ -50,29 +53,29 @@ export default function PatientProfile() {
 
   if (error) return (
     <div className="page-container">
-      <div style={{ display:'flex', alignItems:'center', gap:'var(--space-2)', color:'var(--clr-danger-600)', padding:'var(--space-4)', background:'var(--clr-danger-50)', borderRadius:'var(--radius-lg)' }}>
-        <AlertCircle size={15}/> {error}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--space-2)', color: 'var(--clr-danger-600)', padding: 'var(--space-4)', background: 'var(--clr-danger-50)', borderRadius: 'var(--radius-lg)' }}>
+        <AlertCircle size={15} /> {error}
       </div>
     </div>
   )
 
   return (
     <div className="page-container">
-      <button className={styles.backBtn} onClick={() => navigate('/patients')}>
-        <ArrowLeft size={16}/> Back to Patients
+      <button className={styles.backBtn} onClick={() => navigate(fromOPD ? '/opd' : '/patients')}>
+        <ArrowLeft size={16} /> {fromOPD ? 'Back to OPD' : 'Back to Patients'}
       </button>
 
       {/* Header */}
       <div className={styles.profileHeader}>
         <div className={styles.profileLeft}>
           <div className={styles.profileAvatar}>
-            {patient?.name?.split(' ').map(n=>n[0]).join('').slice(0,2).toUpperCase()}
+            {patient?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
           </div>
           <div>
             <h1 className={styles.profileName}>{patient?.name}</h1>
             <div className={styles.profileMeta}>
               {patient?.age && <span>{patient.age} yrs</span>}
-              {patient?.phone && <span><Phone size={12}/> {patient.phone}</span>}
+              {patient?.phone && <span><Phone size={12} /> {patient.phone}</span>}
               {patient?.bloodGroup && <Badge variant="default">{patient.bloodGroup}</Badge>}
               {patient?.maritalStatus && <Badge variant="default">{patient.maritalStatus}</Badge>}
             </div>
@@ -91,11 +94,11 @@ export default function PatientProfile() {
             <div className={styles.infoGrid}>
               {[
                 ['Date of Birth', patient?.dob ? new Date(patient.dob).toLocaleDateString('en-IN') : '—'],
-                ['Email',         patient?.email    || '—'],
-                ['Phone',         patient?.phone    || '—'],
-                ['Aadhaar',       patient?.aadhaar  || '—'],
-                ['Occupation',    patient?.occupation || '—'],
-                ['Gender',        patient?.gender   || '—'],
+                ['Email', patient?.email || '—'],
+                ['Phone', patient?.phone || '—'],
+                ['Aadhaar', patient?.aadhaar || '—'],
+                ['Occupation', patient?.occupation || '—'],
+                ['Gender', patient?.gender || '—'],
               ].map(([label, value]) => (
                 <div key={label} className={styles.infoRow}>
                   <span className={styles.infoLabel}>{label}</span>
@@ -112,16 +115,16 @@ export default function PatientProfile() {
           <CardBody>
             <div className={styles.infoGrid}>
               {[
-                ['Menarche Age',    patient?.menarcheAge   ? `${patient.menarcheAge} yrs` : '—'],
-                ['Cycle Length',    patient?.cycleLength   ? `${patient.cycleLength} days` : '—'],
-                ['LMP',             patient?.lastMenstrualPeriod ? new Date(patient.lastMenstrualPeriod).toLocaleDateString('en-IN') : '—'],
-                ['Menopause',       patient?.menopauseStatus ? 'Yes' : 'No'],
-                ['Gravida',         patient?.gravida       ?? '—'],
-                ['Parity',          patient?.parity        ?? '—'],
-                ['Abortions',       patient?.abortions     ?? '—'],
+                ['Menarche Age', patient?.menarcheAge ? `${patient.menarcheAge} yrs` : '—'],
+                ['Cycle Length', patient?.cycleLength ? `${patient.cycleLength} days` : '—'],
+                ['LMP', patient?.lastMenstrualPeriod ? new Date(patient.lastMenstrualPeriod).toLocaleDateString('en-IN') : '—'],
+                ['Menopause', patient?.menopauseStatus ? 'Yes' : 'No'],
+                ['Gravida', patient?.gravida ?? '—'],
+                ['Parity', patient?.parity ?? '—'],
+                ['Abortions', patient?.abortions ?? '—'],
                 ['Living Children', patient?.livingChildren ?? '—'],
-                ['Infertility',     patient?.infertilityDuration || '—'],
-                ['Contraception',   patient?.contraceptionHistory || '—'],
+                ['Infertility', patient?.infertilityDuration || '—'],
+                ['Contraception', patient?.contraceptionHistory || '—'],
               ].map(([label, value]) => (
                 <div key={label} className={styles.infoRow}>
                   <span className={styles.infoLabel}>{label}</span>
@@ -140,7 +143,7 @@ export default function PatientProfile() {
           </CardHeader>
           <CardBody>
             {episodes.length === 0
-              ? <p style={{ color:'var(--text-muted)', fontSize:'var(--text-sm)' }}>No episodes yet.</p>
+              ? <p style={{ color: 'var(--text-muted)', fontSize: 'var(--text-sm)' }}>No episodes yet.</p>
               : (
                 <div className={styles.episodeList}>
                   {episodes.map(ep => (
@@ -150,7 +153,7 @@ export default function PatientProfile() {
                       </Badge>
                       <span className={styles.episodeTitle}>{ep.title || '—'}</span>
                       <span className={styles.episodeDate}>
-                        <Calendar size={12}/>
+                        <Calendar size={12} />
                         {ep.createdAt ? new Date(ep.createdAt).toLocaleDateString('en-IN') : '—'}
                       </span>
                       <Badge variant={ep.status === 'active' ? 'success' : 'default'} dot>
