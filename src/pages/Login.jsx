@@ -48,9 +48,13 @@ export default function Login() {
       login(data.user || data.data || data)
       navigate('/dashboard', { replace: true })
 
+      localStorage.setItem('token', data.accessToken || data.token || '')
+      login(data.user || data.data || data)
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       console.error(err)
-      setError('Backend not reachable. Please try again.')
+      const msg = err.response?.data?.message
+      setError(Array.isArray(msg) ? msg.join(', ') : msg || 'Login failed. Please check your credentials.')
     }
 
     setLoading(false)

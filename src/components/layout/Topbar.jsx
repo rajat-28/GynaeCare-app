@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Bell, Search, ChevronDown, LogOut, User } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '@/store/index'
+import { authApi } from '@services/api'
 import styles from './Topbar.module.css'
 
 export default function Topbar({ collapsed }) {
@@ -28,15 +29,10 @@ export default function Topbar({ collapsed }) {
       if (!token) return
 
       try {
-        const res = await fetch('http://localhost:3000/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        })
-
-        if (res.ok) {
-          const data = await res.json()
-          // Update stored user with fresh data from backend
-          login(data.user || data.data || data)
-        }
+        const res = await authApi.me()
+        const data = res.data?.data || res.data
+        // Update stored user with fresh data from backend
+        login(data.user || data.data || data)
       } catch {
         // Silently fail — keep existing stored user data
       }
