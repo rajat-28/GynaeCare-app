@@ -8,15 +8,15 @@ import { patientApi } from '@services/api'
 import styles from './PatientProfile.module.css'
 
 const EPISODE_VARIANT = {
-  opd: 'default', pregnancy: 'primary', fertility: 'teal',
-  ultrasound: 'warning', procedure: 'danger', lab: 'success',
+  opd: 'default', pregnancy: 'primary', // fertility: 'teal',
+  ultrasound: 'warning', procedure: 'danger', // lab: 'success',
 }
 
 const MODULE_ROUTES = {
   opd: 'opd',
   pregnancy: 'pregnancy',
   ultrasound: 'ultrasound',
-  fertility: 'fertility',
+  // fertility: 'fertility',
   procedure: 'reconstructive',
 }
 
@@ -131,7 +131,7 @@ export default function PatientProfile() {
                 ['Parity', patient?.parity ?? '—'],
                 ['Abortions', patient?.abortions ?? '—'],
                 ['Living Children', patient?.livingChildren ?? '—'],
-                ['Infertility', patient?.infertilityDuration || '—'],
+                // ['Infertility', patient?.infertilityDuration || '—'],
                 ['Contraception', patient?.contraceptionHistory || '—'],
               ].map(([label, value]) => (
                 <div key={label} className={styles.infoRow}>

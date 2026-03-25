@@ -9,7 +9,7 @@ import OPD            from '@modules/opd/OPD'
 import Pregnancy      from '@modules/pregnancy/Pregnancy'
 import Ultrasound     from '@modules/ultrasound/Ultrasound'
 import Reconstructive from '@modules/reconstructive/Reconstructive'
-import Fertility      from '@modules/fertility/Fertility'
+// import Fertility      from '@modules/fertility/Fertility'
 import Billing        from '@modules/billing/Billing'
 import Calculators    from '@modules/calculators/Calculators'
 import Consent        from '@modules/consent/Consent'
@@ -45,7 +45,7 @@ function AppRoutes() {
         <Route path="pregnancy/*"      element={<ModuleRoute module="pregnancy"><Pregnancy /></ModuleRoute>} />
         <Route path="ultrasound/*"     element={<ModuleRoute module="ultrasound"><Ultrasound /></ModuleRoute>} />
         <Route path="reconstructive/*" element={<ModuleRoute module="reconstructive"><Reconstructive /></ModuleRoute>} />
-        <Route path="fertility/*"      element={<ModuleRoute module="fertility"><Fertility /></ModuleRoute>} />
+        {/* <Route path="fertility/*"      element={<ModuleRoute module="fertility"><Fertility /></ModuleRoute>} /> */}
         <Route path="billing/*"        element={<ModuleRoute module="billing"><Billing /></ModuleRoute>} />
         <Route path="calculators"      element={<ModuleRoute module="calculators"><Calculators /></ModuleRoute>} />
         <Route path="consent/*"        element={<ModuleRoute module="consent"><Consent /></ModuleRoute>} />

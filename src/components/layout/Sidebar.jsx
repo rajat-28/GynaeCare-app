@@ -16,7 +16,7 @@ const ALL_NAV_ITEMS = [
   { to: '/pregnancy', icon: Baby, label: 'Pregnancy & ANC', module: 'pregnancy' },
   { to: '/ultrasound', icon: Scan, label: 'Ultrasound', module: 'ultrasound' },
   { to: '/reconstructive', icon: Scissors, label: 'Reconstructive', module: 'reconstructive' },
-  // { to: '/fertility',      icon: FlaskConical,    label: 'Fertility & IVF',  module: 'fertility'      },
+  // { to: '/fertility', icon: FlaskConical, label: 'Fertility & IVF', module: 'fertility' },
   { to: '/billing', icon: Receipt, label: 'Billing', module: 'billing' },
   { to: '/calculators', icon: Calculator, label: 'Calculators', module: 'calculators' },
   { to: '/consent', icon: FileCheck, label: 'Consent & Legal', module: 'consent' },

@@ -18,8 +18,8 @@ const SCAN_TYPES = [
   { value: 'tiffa',            label: 'TIFFA / Anomaly' },
   { value: 'growth',           label: 'Growth Scan' },
   { value: 'doppler',          label: 'Doppler' },
-  { value: 'follicular_study', label: 'Follicular Study' },
-  { value: 'pcos_mapping',     label: 'PCOS Mapping' },
+  // { value: 'follicular_study', label: 'Follicular Study' },
+  // { value: 'pcos_mapping',     label: 'PCOS Mapping' },
   { value: 'other',            label: 'Other' },
 ]
 

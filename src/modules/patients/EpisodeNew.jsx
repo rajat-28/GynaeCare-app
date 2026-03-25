@@ -73,7 +73,7 @@ export default function EpisodeNew() {
         ultrasound: '/ultrasound/new',
         pregnancy: '/pregnancy/new',
         procedure: '/reconstructive/new', // Map 'procedure' to reconstructive
-        fertility: '/fertility/new',
+        // fertility: '/fertility/new',
       }
 
       const target = routeMap[type]

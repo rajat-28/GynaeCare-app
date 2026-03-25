@@ -20,7 +20,7 @@ const CAT_MAP = {
   Consultation: 'consultation',
   Ultrasound:   'ultrasound',
   Procedure:    'procedure',
-  Lab:          'lab_test',
+  // Lab:          'lab_test',
   Package:      'package',
 }
 

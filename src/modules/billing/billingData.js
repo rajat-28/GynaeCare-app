@@ -17,17 +17,19 @@ export const SERVICE_CATALOG = [
   { id: 'S023', category: 'Procedure',     name: 'Copper-T Insertion',        rate: 1500 },
   { id: 'S024', category: 'Procedure',     name: 'Laser Vaginal Tightening',  rate: 15000},
   { id: 'S025', category: 'Procedure',     name: 'PRP Therapy',               rate: 12000},
+  /*
   // Lab
   { id: 'S030', category: 'Lab',           name: 'CBC',                       rate: 300  },
   { id: 'S031', category: 'Lab',           name: 'TSH',                       rate: 400  },
   { id: 'S032', category: 'Lab',           name: 'LH / FSH',                  rate: 600  },
   { id: 'S033', category: 'Lab',           name: 'AMH',                       rate: 1800 },
   { id: 'S034', category: 'Lab',           name: 'Urine Routine',             rate: 150  },
+  */
 ]
 
 export const PACKAGES = [
   { id: 'PKG001', name: 'ANC Package',              price: 8000,  includes: ['Dating Scan','NT Scan','TIFFA Scan','Growth Scan','4 OPD Consultations'] },
-  { id: 'PKG002', name: 'Fertility Cycle Package',  price: 12000, includes: ['3 Follicular Studies','IUI Procedure','Hormone Tests','2 Consultations'] },
+  // { id: 'PKG002', name: 'Fertility Cycle Package',  price: 12000, includes: ['3 Follicular Studies','IUI Procedure','Hormone Tests','2 Consultations'] },
   { id: 'PKG003', name: 'Laser Rejuvenation Pkg',   price: 35000, includes: ['3 Laser Sessions','Pre-procedure Consult','Follow-up Visit'] },
 ]
 

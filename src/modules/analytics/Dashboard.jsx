@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/store/index'
+import { analyticsApi } from '@services/api'
 import {
   Users, Stethoscope, Baby, TrendingUp,
   AlertTriangle, Calendar, ArrowUpRight, ArrowDownRight
@@ -12,46 +13,32 @@ import { Card } from '@components/ui/Card'
 import Badge from '@components/ui/Badge'
 import styles from './Dashboard.module.css'
 
-/* ── Mock data ── */
-const OPD_TREND = [
-  { month: 'Sep', opd: 38, new: 12 }, { month: 'Oct', opd: 42, new: 15 },
-  { month: 'Nov', opd: 35, new: 10 }, { month: 'Dec', opd: 48, new: 18 },
-  { month: 'Jan', opd: 52, new: 20 }, { month: 'Feb', opd: 46, new: 14 },
-  { month: 'Mar', opd: 58, new: 22 },
-]
+const STATUS_VARIANT = { 
+  active: 'success', 
+  waiting: 'default', 
+  'high-risk': 'danger',
+  scheduled: 'primary',
+  completed: 'success',
+  cancelled: 'danger' 
+}
 
-const REVENUE_DATA = [
-  { month: 'Sep', revenue: 42000 }, { month: 'Oct', revenue: 55000 },
-  { month: 'Nov', revenue: 38000 }, { month: 'Dec', revenue: 67000 },
-  { month: 'Jan', revenue: 71000 }, { month: 'Feb', revenue: 63000 },
-  { month: 'Mar', revenue: 68400 },
-]
+const EPISODE_COLORS = {
+  opd: '#ec4899',
+  pregnancy: '#14b8a6',
+  fertility: '#8b5cf6',
+  ultrasound: '#f59e0b',
+  procedure: '#ef4444',
+  lab: '#22c55e'
+}
 
-const EPISODE_MIX = [
-  { name: 'OPD', value: 42, color: '#ec4899' },
-  { name: 'Pregnancy', value: 18, color: '#14b8a6' },
-  { name: 'Fertility', value: 12, color: '#8b5cf6' },
-  { name: 'Ultrasound', value: 15, color: '#f59e0b' },
-  { name: 'Reconstructive', value: 8, color: '#ef4444' },
-  { name: 'Lab', value: 5, color: '#22c55e' },
-]
-
-const RECENT_PATIENTS = [
-  { name: 'Priya Sharma', episode: 'Pregnancy Care', time: '10:30 AM', status: 'active' },
-  { name: 'Anita Gupta', episode: 'Fertility Cycle', time: '11:00 AM', status: 'active' },
-  { name: 'Kavya Menon', episode: 'OPD Consultation', time: '11:30 AM', status: 'waiting' },
-  { name: 'Deepa Nair', episode: 'ANC Visit', time: '12:00 PM', status: 'high-risk' },
-  { name: 'Reena Singh', episode: 'Reconstructive', time: '02:00 PM', status: 'active' },
-]
-
-const ALERTS = [
-  { type: 'danger', msg: 'Deepa Nair — Pre-eclampsia risk flag', time: '2h ago' },
-  { type: 'warning', msg: 'Anita Gupta — Follicular study due today', time: '3h ago' },
-  { type: 'warning', msg: 'Lakshmi Iyer — EDD in 3 weeks, prep needed', time: '5h ago' },
-  { type: 'default', msg: 'Meena Pillai — ANC visit overdue by 5 days', time: '1d ago' },
-]
-
-const STATUS_VARIANT = { active: 'success', waiting: 'default', 'high-risk': 'danger' }
+const EPISODE_LABELS = {
+  opd: 'OPD',
+  pregnancy: 'Pregnancy',
+  fertility: 'Fertility',
+  ultrasound: 'Ultrasound',
+  procedure: 'Procedure',
+  lab: 'Lab'
+}
 
 const fmt = n => `₹${Number(n).toLocaleString('en-IN')}`
 
@@ -72,6 +59,21 @@ const CustomTooltip = ({ active, payload, label, prefix = '', suffix = '' }) => 
 
 export default function Dashboard() {
   const { user } = useAuth()
+  const [loading, setLoading] = useState(true)
+  const [stats, setStats] = useState(null)
+
+  useEffect(() => {
+    analyticsApi.getDashboardStats()
+      .then(res => {
+        setStats(res.data?.response || res.data)
+        setLoading(false)
+      })
+      .catch(err => {
+        console.error(err)
+        setLoading(false)
+      })
+  }, [])
+
   const today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
   })
@@ -82,6 +84,35 @@ export default function Dashboard() {
     if (h < 17) return 'Good afternoon'
     return 'Good evening'
   }
+
+  if (loading) return <div className="page-container" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '60vh' }}>Loading Dashboard...</div>
+
+  // Mappings
+  const opdTrendData = (stats?.trends?.opdTrend || []).map(t => ({
+    month: t.month,
+    opd: parseInt(t.opd) || 0,
+    new: 0 // Logic for new patients could be added to backend later
+  }))
+
+  const revenueData = (stats?.trends?.revenueTrend || []).map(t => ({
+    month: t.month,
+    revenue: parseFloat(t.revenue) || 0
+  }))
+
+  const episodeMixData = (stats?.mix || [])
+    .filter(m => !['fertility', 'lab'].includes(m.name))
+    .map(m => ({
+      name: EPISODE_LABELS[m.name] || m.name,
+      value: parseInt(m.value) || 0,
+      color: EPISODE_COLORS[m.name] || '#94a3b8'
+    }))
+
+  const kpis = [
+    { icon: Users, label: "Today's Patients", value: stats?.kpis?.todayPatients || 0, sub: 'Daily count', up: true, color: 'var(--clr-primary-600)' },
+    { icon: Stethoscope, label: 'Total Patients', value: stats?.kpis?.totalPatients || 0, sub: 'All registered', up: true, color: 'var(--clr-teal-600)' },
+    { icon: Baby, label: 'Active Pregnancies', value: stats?.kpis?.activePregnancies || 0, sub: 'Clinical cases', up: true, color: 'var(--clr-accent-600)' },
+    { icon: TrendingUp, label: 'Revenue (MTD)', value: fmt(stats?.kpis?.revenueMTD || 0), sub: 'Month to date', up: true, color: 'var(--clr-primary-600)' },
+  ]
 
   return (
     <div className="page-container">
@@ -97,12 +128,7 @@ export default function Dashboard() {
 
       {/* KPI row */}
       <div className={styles.kpiRow}>
-        {[
-          { icon: Users, label: "Today's Patients", value: '12', sub: '+3 vs yesterday', up: true, color: 'var(--clr-primary-600)' },
-          { icon: Stethoscope, label: 'Total Patients', value: '248', sub: '+18 this month', up: true, color: 'var(--clr-teal-600)' },
-          { icon: Baby, label: 'Active Pregnancies', value: '18', sub: '3 high risk', up: false, color: 'var(--clr-accent-600)' },
-          { icon: TrendingUp, label: 'Revenue (MTD)', value: '₹68.4K', sub: '+12% vs last month', up: true, color: 'var(--clr-primary-600)' },
-        ].map(k => {
+        {kpis.map(k => {
           const Icon = k.icon
           return (
             <Card key={k.label} padding="md" hover className={styles.kpiCard}>
@@ -110,13 +136,14 @@ export default function Dashboard() {
                 <div className={styles.kpiIconWrap} style={{ background: `${k.color}18` }}>
                   <Icon size={20} style={{ color: k.color }} />
                 </div>
-                <span className={`${styles.kpiTrend} ${k.up ? styles.trendUp : styles.trendDown}`}>
+                {/* <span className={`${styles.kpiTrend} ${k.up ? styles.trendUp : styles.trendDown}`}>
                   {k.up ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
                   {k.sub}
-                </span>
+                </span> */}
               </div>
               <div className={styles.kpiValue}>{k.value}</div>
               <div className={styles.kpiLabel}>{k.label}</div>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{k.sub}</div>
             </Card>
           )
         })}
@@ -124,24 +151,19 @@ export default function Dashboard() {
 
       {/* Charts row 1 */}
       <div className={styles.chartsRow}>
-        {/* OPD trend */}
         <Card padding="md" className={styles.chartCardWide}>
           <div className={styles.chartHeader}>
             <div>
               <h3 className={styles.chartTitle}>OPD Volume Trend</h3>
-              <p className={styles.chartSub}>Total visits vs new patients</p>
+              <p className={styles.chartSub}>Total visits for last 6 months</p>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={220}>
-            <AreaChart data={OPD_TREND} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
+            <AreaChart data={opdTrendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="gradOpd" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="5%" stopColor="#ec4899" stopOpacity={0.2} />
                   <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
-                </linearGradient>
-                <linearGradient id="gradNew" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.2} />
-                  <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
                 </linearGradient>
               </defs>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0ede8" vertical={false} />
@@ -149,8 +171,7 @@ export default function Dashboard() {
               <YAxis tick={{ fontSize: 12, fill: '#a8a29e' }} axisLine={false} tickLine={false} />
               <Tooltip content={<CustomTooltip />} />
               <Legend iconType="circle" iconSize={8} wrapperStyle={{ fontSize: 12 }} />
-              <Area type="monotone" dataKey="opd" name="Total OPD" stroke="#ec4899" strokeWidth={2} fill="url(#gradOpd)" />
-              <Area type="monotone" dataKey="new" name="New Patients" stroke="#14b8a6" strokeWidth={2} fill="url(#gradNew)" />
+              <Area type="monotone" dataKey="opd" name="Total OPD Visits" stroke="#ec4899" strokeWidth={2} fill="url(#gradOpd)" />
             </AreaChart>
           </ResponsiveContainer>
         </Card>
@@ -158,24 +179,24 @@ export default function Dashboard() {
         {/* Episode mix */}
         <Card padding="md" className={styles.chartCardNarrow}>
           <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>Episode Mix</h3>
-            <p className={styles.chartSub}>By type</p>
+            <h3 className={styles.chartTitle}>Episode Distribution</h3>
+            <p className={styles.chartSub}>By case type</p>
           </div>
           <ResponsiveContainer width="100%" height={180}>
             <PieChart>
-              <Pie data={EPISODE_MIX} cx="50%" cy="50%" innerRadius={50} outerRadius={80}
+              <Pie data={episodeMixData} cx="50%" cy="50%" innerRadius={50} outerRadius={80}
                 paddingAngle={3} dataKey="value">
-                {EPISODE_MIX.map((e, i) => <Cell key={i} fill={e.color} />)}
+                {episodeMixData.map((e, i) => <Cell key={i} fill={e.color} />)}
               </Pie>
-              <Tooltip formatter={(v, n) => [`${v}%`, n]} />
+              <Tooltip formatter={(v, n) => [v, n]} />
             </PieChart>
           </ResponsiveContainer>
           <div className={styles.legendList}>
-            {EPISODE_MIX.map(e => (
+            {episodeMixData.map(e => (
               <div key={e.name} className={styles.legendItem}>
                 <span className={styles.legendDot} style={{ background: e.color }} />
                 <span className={styles.legendName}>{e.name}</span>
-                <span className={styles.legendVal}>{e.value}%</span>
+                <span className={styles.legendVal}>{e.value}</span>
               </div>
             ))}
           </div>
@@ -188,16 +209,16 @@ export default function Dashboard() {
         <Card padding="md" className={styles.chartCardWide}>
           <div className={styles.chartHeader}>
             <div>
-              <h3 className={styles.chartTitle}>Revenue Trend</h3>
-              <p className={styles.chartSub}>Monthly collections</p>
+              <h3 className={styles.chartTitle}>Revenue Performance</h3>
+              <p className={styles.chartSub}>Last 6 months collections</p>
             </div>
           </div>
           <ResponsiveContainer width="100%" height={200}>
-            <BarChart data={REVENUE_DATA} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
+            <BarChart data={revenueData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0ede8" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#a8a29e' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 12, fill: '#a8a29e' }} axisLine={false} tickLine={false}
-                tickFormatter={v => `₹${v / 1000}K`} />
+                tickFormatter={v => `₹${v >= 1000 ? v / 1000 + 'K' : v}`} />
               <Tooltip content={<CustomTooltip prefix="₹" />} />
               <Bar dataKey="revenue" name="Revenue" fill="#ec4899" radius={[6, 6, 0, 0]} maxBarSize={40} />
             </BarChart>
@@ -207,11 +228,11 @@ export default function Dashboard() {
         {/* Alerts */}
         <Card padding="md" className={styles.chartCardNarrow}>
           <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>Clinical Alerts</h3>
-            <Badge variant="danger">{ALERTS.length}</Badge>
+            <h3 className={styles.chartTitle}>Clinic Alerts</h3>
+            <Badge variant="danger">{(stats?.alerts || []).length}</Badge>
           </div>
           <div className={styles.alertList}>
-            {ALERTS.map((a, i) => (
+            {(stats?.alerts || []).length > 0 ? (stats?.alerts || []).map((a, i) => (
               <div key={i} className={styles.alertItem}>
                 <AlertTriangle size={14} className={`${styles.alertIcon} ${styles[`alert_${a.type}`]}`} />
                 <div className={styles.alertBody}>
@@ -219,7 +240,9 @@ export default function Dashboard() {
                   <span className={styles.alertTime}>{a.time}</span>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p style={{ fontSize: '12px', color: 'var(--text-muted)', textAlign: 'center', padding: '20px' }}>No active alerts.</p>
+            )}
           </div>
         </Card>
       </div>
@@ -229,11 +252,11 @@ export default function Dashboard() {
         {/* Today's patients */}
         <Card padding="md" className={styles.bottomCard}>
           <div className={styles.chartHeader}>
-            <h3 className={styles.chartTitle}>Today's Patients</h3>
-            <Badge variant="primary">13 Mar 2026</Badge>
+            <h3 className={styles.chartTitle}>Today's Queue</h3>
+            <Badge variant="primary">{new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })}</Badge>
           </div>
           <div className={styles.patientList}>
-            {RECENT_PATIENTS.map((p, i) => (
+            {(stats?.recentPatients || []).length > 0 ? (stats?.recentPatients || []).map((p, i) => (
               <div key={i} className={styles.patientRow}>
                 <div className={styles.patientAvatar}>
                   {p.name.split(' ').map(n => n[0]).join('')}
@@ -246,12 +269,14 @@ export default function Dashboard() {
                   <span className={styles.patientTime}>
                     <Calendar size={11} /> {p.time}
                   </span>
-                  <Badge variant={STATUS_VARIANT[p.status]} size="sm" dot>
+                  <Badge variant={STATUS_VARIANT[p.status] || 'default'} size="sm" dot>
                     {p.status.replace('-', ' ')}
                   </Badge>
                 </div>
               </div>
-            ))}
+            )) : (
+              <p style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>No patients scheduled for today.</p>
+            )}
           </div>
         </Card>
 

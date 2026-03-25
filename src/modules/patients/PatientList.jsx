@@ -214,7 +214,7 @@ export default function PatientList() {
       <div className={styles.statsRow}>
         {[
           { label: 'Total Patients', value: patients.length, color: 'var(--clr-primary-600)' },
-          { label: 'Active Episodes', value: patients.filter(p => p.episodes?.length > 0).length, color: 'var(--clr-teal-600)' },
+          // { label: 'Active Episodes', value: patients.filter(p => p.episodes?.length > 0).length, color: 'var(--clr-teal-600)' },
           {
             label: 'Registered Today', value: patients.filter(p => {
               if (!p.createdAt) return false

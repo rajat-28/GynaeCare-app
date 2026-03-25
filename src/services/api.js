@@ -94,14 +94,20 @@ export const consultationApi = {
   update: (id, data) => http.patch(`/consultations/${id}`, data),
 }
 
+/*
 export const fertilityApi = {
   createCycle: (data) => http.post('/fertility/cycles', data),
   getCycleById: (id) => http.get(`/fertility/cycles/${id}`),
   updateCycle: (id, data) => http.patch(`/fertility/cycles/${id}`, data),
   addFollicularStudy: (data) => http.post('/fertility/follicular-studies', data),
 }
+*/
 
 export const procedureApi = {
-    create: (data) => http.post('/procedures', data),
-    addSession: (data) => http.post('/procedures/sessions', data),
+  create: (data) => http.post('/procedures', data),
+  addSession: (data) => http.post('/procedures/sessions', data),
+}
+
+export const analyticsApi = {
+  getDashboardStats: (doctorId) => http.get('/analytics/dashboard', { params: { doctorId } }),
 }
