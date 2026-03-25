@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Heart, AlertCircle } from 'lucide-react'
 import { useAuth } from '@/store/index'
+import { authApi } from '@services/api'
 import styles from './Login.module.css'
 
 export default function Login() {
@@ -26,30 +27,17 @@ export default function Login() {
     setLoading(true)
 
     try {
-      const res = await fetch('http://localhost:3000/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: email.trim().toLowerCase(), password })
-      })
+      const res = await authApi.login({ email: email.trim().toLowerCase(), password })
+      const data = res.data?.data || res.data
+      console.log('LOGIN RESPONSE:', data)
 
-      const data = await res.json()
-console.log('LOGIN RESPONSE:', data)
-
-if (!res.ok) {
-  setError(data.message || 'Login failed')
-  setLoading(false)
-  return
-}
-
-localStorage.setItem('token', data.accessToken || data.token || '')
-
-// Pass the full user object — normalizeUser in store handles the shape
-login(data.user || data.data || data)
-navigate('/dashboard', { replace: true })
-
+      localStorage.setItem('token', data.accessToken || data.token || '')
+      login(data.user || data.data || data)
+      navigate('/dashboard', { replace: true })
     } catch (err) {
       console.error(err)
-      setError('Backend not reachable. Please try again.')
+      const msg = err.response?.data?.message
+      setError(Array.isArray(msg) ? msg.join(', ') : msg || 'Login failed. Please check your credentials.')
     }
 
     setLoading(false)
