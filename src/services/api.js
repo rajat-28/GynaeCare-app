@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const BASE_URL = import.meta.env.VITE_API_URL
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000'
 
 const http = axios.create({
   baseURL: BASE_URL,
@@ -106,4 +106,8 @@ export const fertilityApi = {
 export const procedureApi = {
     create: (data) => http.post('/procedures', data),
     addSession: (data) => http.post('/procedures/sessions', data),
+}
+
+export const analyticsApi = {
+  getDashboardStats: (doctorId) => http.get('/analytics/dashboard', { params: { doctorId } }),
 }
