@@ -63,16 +63,20 @@ export default function Dashboard() {
   const [stats, setStats] = useState(null)
 
   useEffect(() => {
-    analyticsApi.getDashboardStats()
-      .then(res => {
-        setStats(res.data?.response || res.data)
-        setLoading(false)
-      })
-      .catch(err => {
-        console.error(err)
-        setLoading(false)
-      })
-  }, [])
+    if (user?.id) {
+      analyticsApi.getDashboardStats(user.id)
+        .then(res => {
+          setStats(res.data?.response || res.data)
+          setLoading(false)
+        })
+        .catch(err => {
+          console.error(err)
+          setLoading(false)
+        })
+    } else {
+      setLoading(false)
+    }
+  }, [user?.id])
 
   const today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
