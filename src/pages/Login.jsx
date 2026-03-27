@@ -30,7 +30,7 @@ export default function Login() {
     try {
       const res = await authApi.login({ email: email.trim().toLowerCase(), password })
       const data = res.data?.data || res.data
-      console.log('LOGIN RESPONSE:', data)
+
 
       localStorage.setItem('token', data.accessToken || data.token || '')
       login(data.user || data.data || data)
