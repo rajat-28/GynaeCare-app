@@ -76,20 +76,30 @@ export default function InvoiceNew() {
       const res = await patientApi.getEpisodes(p.id)
       const fetched = res.data ?? []
       setEpisodes(fetched)
-      // Follow-up: find most recent medical activity (episode creation or consultation) across all episodes
+      
+      // Follow-up: find most recent medical activity across all episodes and consultations
       let latestActivity = 0
       fetched.forEach(ep => {
+        // Episode creation date
         const epDate = new Date(ep.createdAt).getTime()
         if (epDate > latestActivity) latestActivity = epDate
         
-        if (Array.isArray(ep.consultations) && ep.consultations.length > 0) {
-          const consDate = new Date(ep.consultations[0].createdAt).getTime()
-          if (consDate > latestActivity) latestActivity = consDate
+        // Check ALL consultations in this episode
+        if (Array.isArray(ep.consultations)) {
+          ep.consultations.forEach(cons => {
+            const consDate = new Date(cons.createdAt).getTime()
+            if (consDate > latestActivity) latestActivity = consDate
+          })
         }
       })
 
       if (latestActivity > 0) {
-        const daysSince = Math.floor((Date.now() - latestActivity) / 86400000)
+        // Compare with local midnight to be consistent with "days"
+        const now = new Date()
+        const diffMs = now.getTime() - latestActivity
+        const daysSince = diffMs / 86400000 
+        
+        // Exact 5-day window
         setIsFollowUp(daysSince <= 5)
       } else {
         setIsFollowUp(false)
