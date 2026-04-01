@@ -15,8 +15,13 @@ export default function CycleDayCalculator() {
   const result = useMemo(() => {
     if (!form.lmp) return null
     const lmp   = dayjs(form.lmp)
+    if (lmp.isAfter(dayjs(), 'day')) return { error: "LMP cannot be a future date." }
     const visit = form.visitDate ? dayjs(form.visitDate) : dayjs()
-    if (visit.isBefore(lmp)) return null
+    if (visit.isBefore(lmp)) return { error: "Visit date cannot be before LMP." }
+    
+    const cycleLength = Number(form.cycleLength) || 28
+    if (cycleLength < 21 || cycleLength > 45) return { error: "Cycle length must be between 21 and 45 days." }
+
     const cycleDay = visit.diff(lmp, 'day') + 1
     const { phase, color } = getCyclePhase(cycleDay)
     const warn = cycleDay > 90
@@ -29,9 +34,16 @@ export default function CycleDayCalculator() {
       icon={Calendar}
       color="teal"
       result={result ? (
-        <ResultCard>
-          <ResultPrimary
-            label="Current Cycle Day"
+        result.error ? (
+          <ResultCard>
+            <div style={{padding:'var(--space-6)',textAlign:'center',color:'var(--clr-danger-500)'}}>
+              ⚠ {result.error}
+            </div>
+          </ResultCard>
+        ) : (
+          <ResultCard>
+            <ResultPrimary
+              label="Current Cycle Day"
             value={`Day ${result.cycleDay}`}
             sub={`As of ${result.visitDateUsed}`}
           />
@@ -46,6 +58,7 @@ export default function CycleDayCalculator() {
           <ResultDivider/>
           <ResultDisclaimer text="Phase mapping based on standard 28-day cycle. Adjust for variable cycle lengths." />
         </ResultCard>
+        )
       ) : null}
       onReset={() => setForm(INITIAL)}
       onSave={() => alert('Cycle day saved to EMR!')}

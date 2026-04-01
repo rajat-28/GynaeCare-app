@@ -3,7 +3,7 @@ import { useAuth } from '@/store/index'
 import { analyticsApi } from '@services/api'
 import {
   Users, Stethoscope, Baby, TrendingUp,
-  AlertTriangle, Calendar, ArrowUpRight, ArrowDownRight
+  AlertTriangle, Calendar, IndianRupee, Wallet, Clock
 } from 'lucide-react'
 import {
   AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell,
@@ -42,15 +42,27 @@ const EPISODE_LABELS = {
 
 const fmt = n => `₹${Number(n).toLocaleString('en-IN')}`
 
-/* ── Custom tooltip ── */
-const CustomTooltip = ({ active, payload, label, prefix = '', suffix = '' }) => {
+/* ── Revenue tooltip — total only ── */
+const RevenueTooltip = ({ active, payload, label }) => {
+  if (!active || !payload?.length) return null
+  const revenue = payload.find(p => p.dataKey === 'revenue')?.value || 0
+  return (
+    <div className={styles.tooltip}>
+      <p className={styles.tooltipLabel}>{label}</p>
+      <p className={styles.tooltipVal} style={{ color: '#ec4899' }}>Revenue: {fmt(revenue)}</p>
+    </div>
+  )
+}
+
+/* ── Generic tooltip ── */
+const CustomTooltip = ({ active, payload, label }) => {
   if (!active || !payload?.length) return null
   return (
     <div className={styles.tooltip}>
       <p className={styles.tooltipLabel}>{label}</p>
       {payload.map((p, i) => (
         <p key={i} style={{ color: p.color }} className={styles.tooltipVal}>
-          {p.name}: {prefix}{typeof p.value === 'number' && p.value > 1000 ? fmt(p.value) : p.value}{suffix}
+          {p.name}: {typeof p.value === 'number' && p.value > 1000 ? fmt(p.value) : p.value}
         </p>
       ))}
     </div>
@@ -95,12 +107,14 @@ export default function Dashboard() {
   const opdTrendData = (stats?.trends?.opdTrend || []).map(t => ({
     month: t.month,
     opd: parseInt(t.opd) || 0,
-    new: 0 // Logic for new patients could be added to backend later
+    new: 0
   }))
 
   const revenueData = (stats?.trends?.revenueTrend || []).map(t => ({
     month: t.month,
-    revenue: parseFloat(t.revenue) || 0
+    revenue:  parseFloat(t.revenue)  || 0,
+    received: parseFloat(t.received) || 0,
+    due:      parseFloat(t.due)      || 0,
   }))
 
   const episodeMixData = (stats?.mix || [])
@@ -111,11 +125,22 @@ export default function Dashboard() {
       color: EPISODE_COLORS[m.name] || '#94a3b8'
     }))
 
+  const serviceRevenueData = (stats?.serviceRevenue || []).map((s, i) => ({
+    service: s.service,
+    revenue: parseFloat(s.revenue) || 0,
+    color: SERVICE_COLORS[i % SERVICE_COLORS.length]
+  }))
+
+  const totalRevenue  = stats?.kpis?.totalRevenue  || 0
+  const totalReceived = stats?.kpis?.totalReceived  || 0
+  const totalDue      = stats?.kpis?.totalDue       || 0
+  const receivedPct   = totalRevenue > 0 ? Math.round((totalReceived / totalRevenue) * 100) : 0
+
   const kpis = [
-    { icon: Users, label: "Today's Patients", value: stats?.kpis?.todayPatients || 0, sub: 'Daily count', up: true, color: 'var(--clr-primary-600)' },
-    { icon: Stethoscope, label: 'Total Patients', value: stats?.kpis?.totalPatients || 0, sub: 'All registered', up: true, color: 'var(--clr-teal-600)' },
-    { icon: Baby, label: 'Active Pregnancies', value: stats?.kpis?.activePregnancies || 0, sub: 'Clinical cases', up: true, color: 'var(--clr-accent-600)' },
-    { icon: TrendingUp, label: 'Revenue (MTD)', value: fmt(stats?.kpis?.revenueMTD || 0), sub: 'Month to date', up: true, color: 'var(--clr-primary-600)' },
+    { icon: Users,        label: "Today's Patients",  value: stats?.kpis?.todayPatients || 0,     sub: 'Daily count',    color: 'var(--clr-primary-600)' },
+    { icon: Stethoscope,  label: 'Total Patients',    value: stats?.kpis?.totalPatients || 0,     sub: 'All registered', color: 'var(--clr-teal-600)' },
+    { icon: Baby,         label: 'Active Pregnancies',value: stats?.kpis?.activePregnancies || 0, sub: 'Clinical cases', color: 'var(--clr-accent-600)' },
+    { icon: TrendingUp,   label: 'Revenue (MTD)',     value: fmt(stats?.kpis?.revenueMTD || 0),   sub: 'Month to date',  color: 'var(--clr-primary-600)' },
   ]
 
   return (
@@ -127,7 +152,6 @@ export default function Dashboard() {
           </h1>
           <p className={styles.pageSub}>{today}</p>
         </div>
-        {/* <Badge variant="primary" dot>Clinic Open</Badge> */}
       </div>
 
       {/* KPI row */}
@@ -140,10 +164,6 @@ export default function Dashboard() {
                 <div className={styles.kpiIconWrap} style={{ background: `${k.color}18` }}>
                   <Icon size={20} style={{ color: k.color }} />
                 </div>
-                {/* <span className={`${styles.kpiTrend} ${k.up ? styles.trendUp : styles.trendDown}`}>
-                  {k.up ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                  {k.sub}
-                </span> */}
               </div>
               <div className={styles.kpiValue}>{k.value}</div>
               <div className={styles.kpiLabel}>{k.label}</div>
@@ -151,6 +171,51 @@ export default function Dashboard() {
             </Card>
           )
         })}
+      </div>
+
+      {/* Revenue summary strip */}
+      <div className={styles.revenueStrip}>
+        {/* Total revenue */}
+        <Card padding="md" className={styles.revCard}>
+          <div className={styles.revCardTop}>
+            <div className={styles.revIconWrap} style={{ background: '#ec489918' }}>
+              <IndianRupee size={18} style={{ color: '#ec4899' }} />
+            </div>
+            <span className={styles.revCardLabel}>Total Revenue (All Time)</span>
+          </div>
+          <div className={styles.revCardValue}>{fmt(totalRevenue)}</div>
+        </Card>
+
+        {/* Received */}
+        <Card padding="md" className={styles.revCard}>
+          <div className={styles.revCardTop}>
+            <div className={styles.revIconWrap} style={{ background: '#22c55e18' }}>
+              <Wallet size={18} style={{ color: '#22c55e' }} />
+            </div>
+            <span className={styles.revCardLabel}>Received</span>
+          </div>
+          <div className={styles.revCardValue} style={{ color: '#22c55e' }}>{fmt(totalReceived)}</div>
+          {/* Progress bar */}
+          <div className={styles.revProgress}>
+            <div className={styles.revProgressBar} style={{ width: `${receivedPct}%`, background: '#22c55e' }} />
+          </div>
+          <div className={styles.revProgressLabel}>{receivedPct}% collected</div>
+        </Card>
+
+        {/* Due */}
+        <Card padding="md" className={styles.revCard}>
+          <div className={styles.revCardTop}>
+            <div className={styles.revIconWrap} style={{ background: '#f59e0b18' }}>
+              <Clock size={18} style={{ color: '#f59e0b' }} />
+            </div>
+            <span className={styles.revCardLabel}>Outstanding Due</span>
+          </div>
+          <div className={styles.revCardValue} style={{ color: '#f59e0b' }}>{fmt(totalDue)}</div>
+          <div className={styles.revProgress}>
+            <div className={styles.revProgressBar} style={{ width: `${100 - receivedPct}%`, background: '#f59e0b' }} />
+          </div>
+          <div className={styles.revProgressLabel}>{100 - receivedPct}% pending</div>
+        </Card>
       </div>
 
       {/* Charts row 1 */}
@@ -166,7 +231,7 @@ export default function Dashboard() {
             <AreaChart data={opdTrendData} margin={{ top: 5, right: 10, left: -20, bottom: 0 }}>
               <defs>
                 <linearGradient id="gradOpd" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#ec4899" stopOpacity={0.2} />
+                  <stop offset="5%"  stopColor="#ec4899" stopOpacity={0.2} />
                   <stop offset="95%" stopColor="#ec4899" stopOpacity={0} />
                 </linearGradient>
               </defs>
@@ -207,24 +272,24 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Charts row 2 */}
+      {/* Charts row 2 — Revenue Performance + Alerts */}
       <div className={styles.chartsRow}>
-        {/* Revenue */}
+        {/* Revenue chart — single bar, hover tooltip shows received + due */}
         <Card padding="md" className={styles.chartCardWide}>
           <div className={styles.chartHeader}>
             <div>
               <h3 className={styles.chartTitle}>Revenue Performance</h3>
-              <p className={styles.chartSub}>Last 6 months collections</p>
+              <p className={styles.chartSub}>Last 6 months — hover a bar for received vs due</p>
             </div>
           </div>
-          <ResponsiveContainer width="100%" height={200}>
+          <ResponsiveContainer width="100%" height={220}>
             <BarChart data={revenueData} margin={{ top: 5, right: 10, left: -10, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0ede8" vertical={false} />
               <XAxis dataKey="month" tick={{ fontSize: 12, fill: '#a8a29e' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 12, fill: '#a8a29e' }} axisLine={false} tickLine={false}
                 tickFormatter={v => `₹${v >= 1000 ? v / 1000 + 'K' : v}`} />
-              <Tooltip content={<CustomTooltip prefix="₹" />} />
-              <Bar dataKey="revenue" name="Revenue" fill="#ec4899" radius={[6, 6, 0, 0]} maxBarSize={40} />
+              <Tooltip content={<RevenueTooltip />} />
+              <Bar dataKey="revenue" name="Total" fill="#ec4899" radius={[6,6,0,0]} maxBarSize={40} />
             </BarChart>
           </ResponsiveContainer>
         </Card>
@@ -251,9 +316,9 @@ export default function Dashboard() {
         </Card>
       </div>
 
-      {/* Bottom row */}
+
+      {/* Bottom row — Today's Queue */}
       <div className={styles.bottomRow}>
-        {/* Today's patients */}
         <Card padding="md" className={styles.bottomCard}>
           <div className={styles.chartHeader}>
             <h3 className={styles.chartTitle}>Today's Queue</h3>
@@ -282,24 +347,6 @@ export default function Dashboard() {
               <p style={{ fontSize: '13px', color: 'var(--text-muted)', textAlign: 'center', padding: '40px' }}>No patients scheduled for today.</p>
             )}
           </div>
-        </Card>
-
-        {/* Quick stats */}
-        <Card padding="md" className={styles.quickStats}>
-          <h3 className={styles.chartTitle} style={{ marginBottom: 'var(--space-4)' }}>Clinical Metrics</h3>
-          {[
-            { label: 'Pregnancy Success Rate', value: '94%', variant: 'success' },
-            { label: 'IVF Cycle Success', value: '62%', variant: 'teal' },
-            { label: 'Avg ANC Visits / Patient', value: '8.4', variant: 'primary' },
-            { label: 'Patient Retention Rate', value: '87%', variant: 'success' },
-            { label: 'High Risk Pregnancies', value: '16%', variant: 'warning' },
-            { label: 'Complication Rate', value: '4.2%', variant: 'danger' },
-          ].map(m => (
-            <div key={m.label} className={styles.metricRow}>
-              <span className={styles.metricLabel}>{m.label}</span>
-              <Badge variant={m.variant}>{m.value}</Badge>
-            </div>
-          ))}
         </Card>
       </div>
     </div>

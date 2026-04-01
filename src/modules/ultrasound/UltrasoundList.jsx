@@ -40,7 +40,7 @@ export default function UltrasoundList() {
     const rawPatientId = e.patient?.id
     if (!rawPatientId) return
     const lastScan = e.ultrasounds?.[0]
-    
+
     if (!patientMap[rawPatientId]) {
       patientMap[rawPatientId] = {
         id: e.id,
@@ -48,7 +48,7 @@ export default function UltrasoundList() {
         patientName: e.patient.name || 'Unknown',
         patientId: e.patient.id?.slice(0, 8) || '—',
         age: e.patient.age || '—',
-        date: new Date(e.createdAt).toLocaleDateString('en-IN', { day:'2-digit', month:'short', year:'numeric' }),
+        date: new Date(e.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
         scanType: lastScan?.scanType || '—',
         category: lastScan?.scanCategory || '—',
         findings: lastScan?.findings?.summary || lastScan?.impression || '—',
@@ -62,7 +62,7 @@ export default function UltrasoundList() {
   const totalScans = episodes.reduce((acc, curr) => acc + (curr.ultrasounds?.length || 0), 0)
   const obstetricCount = episodes.reduce((acc, e) => acc + (e.ultrasounds?.filter(u => u.scanCategory?.toLowerCase() === 'obstetric').length || 0), 0)
   const gynaeCount = totalScans - obstetricCount
-  
+
   const now = new Date()
   const scansThisMonth = episodes.reduce((acc, e) => {
     return acc + (e.ultrasounds?.filter(u => {
@@ -77,7 +77,7 @@ export default function UltrasoundList() {
       render: (val, row) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <div style={{ width: '32px', height: '32px', borderRadius: '50%', background: 'var(--clr-primary-100)', color: 'var(--clr-primary-700)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', fontWeight: 'bold' }}>
-            {val.split(' ').map(n=>n[0]).join('')}
+            {val.split(' ').map(n => n[0]).join('')}
           </div>
           <div>
             <div style={{ fontWeight: '600', color: 'var(--text-primary)' }}>{val}</div>
@@ -90,7 +90,7 @@ export default function UltrasoundList() {
       key: 'date', label: 'Last Scan',
       render: (val) => (
         <div style={{ fontSize: '14px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '6px' }}>
-          <Calendar size={14}/> {val}
+          <Calendar size={14} /> {val}
         </div>
       )
     },
@@ -123,10 +123,10 @@ export default function UltrasoundList() {
 
       <div className={styles.statsRow}>
         {[
-          { label: 'Total Scans',    value: loading ? '...' : totalScans,      color: 'var(--clr-primary-600)' },
-          { label: 'This Month',     value: loading ? '...' : scansThisMonth,   color: 'var(--clr-teal-600)'    },
-          { label: 'Obstetric',      value: loading ? '...' : obstetricCount,  color: 'var(--clr-accent-600)'  },
-          { label: 'Gynaecological', value: loading ? '...' : gynaeCount,      color: 'var(--clr-warning-500)' },
+          { label: 'Total Scans', value: loading ? '...' : totalScans, color: 'var(--clr-primary-600)' },
+          { label: 'This Month', value: loading ? '...' : scansThisMonth, color: 'var(--clr-teal-600)' },
+          { label: 'Obstetric', value: loading ? '...' : obstetricCount, color: 'var(--clr-accent-600)' },
+          { label: 'Gynaecological', value: loading ? '...' : gynaeCount, color: 'var(--clr-warning-500)' },
         ].map(s => (
           <Card key={s.label} padding="sm" className={styles.statCard}>
             <div className={styles.statValue} style={{ color: s.color }}>{s.value}</div>
@@ -138,14 +138,14 @@ export default function UltrasoundList() {
       <Card padding="none">
         <div className={styles.toolbar}>
           <div className={styles.searchWrap}>
-            <Search size={14} className={styles.searchIcon}/>
+            <Search size={14} className={styles.searchIcon} />
             <input className={styles.searchInput}
-              placeholder="Search patient, scan type..."
-              value={search} onChange={e => setSearch(e.target.value)}/>
+              placeholder="Search patient"
+              value={search} onChange={e => setSearch(e.target.value)} />
           </div>
         </div>
-        <Table 
-          columns={COLUMNS} 
+        <Table
+          columns={COLUMNS}
           data={tableData}
           onRowClick={row => navigate(`/ultrasound/patient/${row.rawPatientId}`)}
           emptyMessage={loading ? "Loading..." : "No scan reports found"}

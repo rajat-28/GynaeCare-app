@@ -37,7 +37,7 @@ function MultiCheck({ options, selected, onChange, label }) {
   )
 }
 
-export default function StepGynaeHistory({ data, update }) {
+export default function StepGynaeHistory({ data, update, errors = {}, onBlur }) {
   return (
     <div>
       <h2 className={styles.stepTitle}>Gynaecological History</h2>
@@ -46,18 +46,18 @@ export default function StepGynaeHistory({ data, update }) {
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>Menstrual History</h3>
         <div className={styles.grid3}>
-          <Input label="Menarche Age" type="number" value={data.menarcheAge}
-            onChange={e => update({ menarcheAge: e.target.value })} placeholder="e.g. 13" suffix="yrs" />
-          <Input label="Cycle Length" type="number" value={data.cycleLength}
-            onChange={e => update({ cycleLength: e.target.value })} placeholder="e.g. 28" suffix="days" />
-          <Input label="Duration of Flow" type="number" value={data.cycleDuration}
-            onChange={e => update({ cycleDuration: e.target.value })} placeholder="e.g. 5" suffix="days" />
+          <Input label="Menarche Age" type="number" min="8" max="20" value={data.menarcheAge} error={errors.menarcheAge}
+            onChange={e => update({ menarcheAge: e.target.value })} onBlur={() => onBlur && onBlur('menarcheAge')} placeholder="e.g. 13" suffix="yrs" hint="Range: 8–20 years" />
+          <Input label="Cycle Length" type="number" min="21" max="45" value={data.cycleLength} error={errors.cycleLength}
+            onChange={e => update({ cycleLength: e.target.value })} onBlur={() => onBlur && onBlur('cycleLength')} placeholder="e.g. 28" suffix="days" hint="Range: 21–45 days" />
+          <Input label="Duration of Flow" type="number" value={data.cycleDuration} error={errors.cycleDuration}
+            onChange={e => update({ cycleDuration: e.target.value })} onBlur={() => onBlur && onBlur('cycleDuration')} placeholder="e.g. 5" suffix="days" />
         </div>
         <div className={styles.grid2} style={{ marginTop: '1rem' }}>
-          <Input label="Last Menstrual Period (LMP)" type="date" value={data.lmp}
-            onChange={e => update({ lmp: e.target.value })} />
-          <Select label="Cycle Regularity" value={data.cycleRegularity}
-            onChange={e => update({ cycleRegularity: e.target.value })}
+          <Input label="Last Menstrual Period (LMP)" type="date" max={new Date().toISOString().split('T')[0]} value={data.lmp} error={errors.lmp}
+            onChange={e => update({ lmp: e.target.value })} onBlur={() => onBlur && onBlur('lmp')} />
+          <Select label="Cycle Regularity" value={data.cycleRegularity} error={errors.cycleRegularity}
+            onChange={e => update({ cycleRegularity: e.target.value })} onBlur={() => onBlur && onBlur('cycleRegularity')}
             options={REGULARITY_OPTS} placeholder="Select..." />
         </div>
         <div className={styles.checkRow} style={{ marginTop: '1rem' }}>

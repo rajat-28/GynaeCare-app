@@ -23,6 +23,11 @@ export default function SectionComplaints({ data, update }) {
         <textarea className={styles.textarea} rows={3} placeholder="Describe in detail..."
           value={data.complaintsNote} onChange={e => update({ complaintsNote: e.target.value })}/>
       </div>
+      {data.complaints.length === 0 && !data.complaintsNote?.trim() && (
+        <div style={{ marginTop: '1rem', padding: '0.75rem', background: '#fef2f2', color: '#b91c1c', borderRadius: '8px', fontSize: '13px' }}>
+          ⚠ At least one Chief Complaint must be selected or entered.
+        </div>
+      )}
     </div>
   )
 }

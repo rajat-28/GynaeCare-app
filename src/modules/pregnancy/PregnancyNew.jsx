@@ -145,7 +145,7 @@ export default function PregnancyNew() {
   return (
     <div className="page-container" onClick={() => setShowDropdown(false)}>
       <button className={styles.backBtn} onClick={() => navigate('/pregnancy')}>
-        <ArrowLeft size={16}/> Back to Pregnancy
+        <ArrowLeft size={16} /> Back to Pregnancy
       </button>
 
       {error && (
@@ -161,7 +161,7 @@ export default function PregnancyNew() {
 
             <div style={{ position: 'relative' }} onClick={e => e.stopPropagation()}>
               <Input
-                label="Search Patient (Name / Phone)"
+                label="Patient (Name / Phone)"
                 value={form.patientSearch}
                 onChange={e => !fixedPatient && handlePatientSearch(e.target.value)}
                 onFocus={() => !fixedPatient && setShowDropdown(true)}
@@ -218,11 +218,20 @@ export default function PregnancyNew() {
                 value={form.cycleLength}
                 onChange={e => set({ cycleLength: e.target.value })}
               />
+
+              <Input
+                label="EDD Override (Manual)"
+                type="date"
+                value={form.eddOverride}
+                min={new Date().toISOString().split('T')[0]}
+                onChange={e => set({ eddOverride: e.target.value })}
+                style={{ gridColumn: 1 }}
+              />
             </div>
 
             {edd && (
               <div className={styles.eddBox}>
-                <Calculator size={16}/>
+                <Calculator size={16} />
                 <div>
                   <div className={styles.eddLabel}>Auto-calculated EDD</div>
                   <div className={styles.eddValue}>{edd}</div>
@@ -230,13 +239,6 @@ export default function PregnancyNew() {
                 <Badge variant="primary">{pgWeek}</Badge>
               </div>
             )}
-
-            <Input
-              label="EDD Override"
-              type="date"
-              value={form.eddOverride}
-              onChange={e => set({ eddOverride: e.target.value })}
-            />
           </Card>
 
           {/* Obstetric */}

@@ -108,6 +108,14 @@ export const procedureApi = {
     addSession: (data) => http.post('/procedures/sessions', data),
 }
 
+export const userApi = {
+  getAll: () => http.get('/users'),
+  getById: id => http.get(`/users/${id}`),
+  create: data => http.post('/users', data),
+  update: (id, data) => http.patch(`/users/${id}`, data),
+  delete: id => http.delete(`/users/${id}`),
+}
+
 export const analyticsApi = {
   getDashboardStats: (doctorId) => http.get('/analytics/dashboard', { params: { doctorId } }),
 }

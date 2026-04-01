@@ -18,7 +18,13 @@ export default function EDDCalculator() {
 
   const result = useMemo(() => {
     if (form.method === "LMP (Naegele's Rule)" && form.lmp) {
+      if (dayjs(form.lmp).isAfter(dayjs(), 'day')) {
+        return { error: "LMP cannot be a future date." }
+      }
       const cycle = Number(form.cycleLength) || 28
+      if (cycle < 21 || cycle > 45) {
+        return { error: "Cycle length must be between 21 and 45 days." }
+      }
       const adj   = cycle - 28
       const edd   = dayjs(form.lmp).add(280 + adj, 'day')
       const today = dayjs()
@@ -54,9 +60,16 @@ export default function EDDCalculator() {
       icon={Baby}
       color="primary"
       result={result ? (
-        <ResultCard>
-          <ResultPrimary
-            label="Expected Date of Delivery"
+        result.error ? (
+          <ResultCard>
+            <div style={{padding:'var(--space-6)',textAlign:'center',color:'var(--clr-danger-500)'}}>
+              ⚠ {result.error}
+            </div>
+          </ResultCard>
+        ) : (
+          <ResultCard>
+            <ResultPrimary
+              label="Expected Date of Delivery"
             value={result.edd}
             sub={`${result.daysToEdd > 0 ? result.daysToEdd + ' days remaining' : 'Past due date'}`}
           />
@@ -66,6 +79,7 @@ export default function EDDCalculator() {
           <ResultDivider/>
           <ResultDisclaimer text="EDD is an estimate. Clinical correlation and ultrasound confirmation recommended." />
         </ResultCard>
+        )
       ) : null}
       onReset={() => setForm(INITIAL)}
       onSave={() => alert('EDD saved to EMR!')}

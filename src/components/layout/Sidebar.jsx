@@ -2,7 +2,7 @@ import { NavLink, useNavigate } from 'react-router-dom'
 import {
   LayoutDashboard, Users, Stethoscope, Baby, Scan,
   Scissors, FlaskConical, Receipt, Calculator,
-  FileCheck, MessageSquare, ChevronLeft, Heart
+  FileCheck, MessageSquare, ChevronLeft, Heart, ShieldCheck
 } from 'lucide-react'
 import clsx from 'clsx'
 import { useAuth, ROLE_PERMISSIONS } from '@/store/index'
@@ -21,6 +21,7 @@ const ALL_NAV_ITEMS = [
   { to: '/calculators', icon: Calculator, label: 'Calculators', module: 'calculators' },
   { to: '/consent', icon: FileCheck, label: 'Consent & Legal', module: 'consent' },
   { to: '/engagement', icon: MessageSquare, label: 'Engagement', module: 'engagement' },
+  { to: '/admin/users', icon: ShieldCheck, label: 'Admin Panel', module: 'admin' },
 ]
 
 export default function Sidebar({ collapsed, onToggle }) {
