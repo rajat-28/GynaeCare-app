@@ -4,14 +4,14 @@ import { ArrowLeft, Save, Printer } from 'lucide-react'
 import Button from '@components/ui/Button'
 import { Card } from '@components/ui/Card'
 import { patientApi, consultationApi } from '@services/api'
-import SectionComplaints    from './sections/SectionComplaints'
-import SectionMenstrual     from './sections/SectionMenstrual'
-import SectionObstetric     from './sections/SectionObstetric'
-import SectionSurgical      from './sections/SectionSurgical'
-import SectionExamination   from './sections/SectionExamination'
-import SectionPrescription  from './sections/SectionPrescription'
+import SectionComplaints from './sections/SectionComplaints'
+import SectionMenstrual from './sections/SectionMenstrual'
+import SectionObstetric from './sections/SectionObstetric'
+import SectionSurgical from './sections/SectionSurgical'
+import SectionExamination from './sections/SectionExamination'
+import SectionPrescription from './sections/SectionPrescription'
 import SectionInvestigation from './sections/SectionInvestigation'
-import SectionAdvice        from './sections/SectionAdvice'
+import SectionAdvice from './sections/SectionAdvice'
 import styles from './OPDNew.module.css'
 
 const SECTIONS = [
@@ -24,13 +24,13 @@ const INITIAL = {
   patientId: 'P001', patientName: 'Priya Sharma',
   date: new Date().toISOString().split('T')[0],
   complaints: [], complaintsNote: '',
-  menstrual: { cycleRegularity:'', duration:'', dysmenorrhea: false, pmsSymptoms: false },
-  obstetric: { gravida:'', para:'', abortions:'', living:'', prevCSection: false },
+  menstrual: { cycleRegularity: '', duration: '', dysmenorrhea: false, pmsSymptoms: false },
+  obstetric: { gravida: '', para: '', abortions: '', living: '', prevCSection: false },
   surgicalHistory: [], surgicalNote: '',
-  perAbdomen:   { tenderness: false, mass: false, uterineSize: '' },
-  perSpeculum:  { cervixCondition: '', discharge: '', lesions: '' },
-  perVaginal:   { uterinePosition: '', adnexalMass: '', tenderness: false },
-  generalExam:  { bp:'', pulse:'', weight:'', height:'', pallor: false, oedema: false },
+  perAbdomen: { tenderness: false, mass: false, uterineSize: '' },
+  perSpeculum: { cervixCondition: '', discharge: '', lesions: '' },
+  perVaginal: { uterinePosition: '', adnexalMass: '', tenderness: false },
+  generalExam: { bp: '', pulse: '', weight: '', height: '', pallor: false, oedema: false },
   medicines: [],
   investigations: [],
   advice: [], adviceNote: '',
@@ -44,8 +44,8 @@ export default function OPDNew() {
   const [searchParams] = useSearchParams()
   const patientIdParams = searchParams.get('patientId')
   const episodeIdParams = searchParams.get('episodeId')
-  
-  const [data, setData]         = useState(INITIAL)
+
+  const [data, setData] = useState(INITIAL)
   const [activeSection, setActiveSection] = useState(0)
   const [saving, setSaving] = useState(false)
 
@@ -60,7 +60,7 @@ export default function OPDNew() {
             patientId: p.patientId || p.id?.slice(0, 8) || '—',
             patientName: p.name || 'Unknown',
             age: p.age || '—',
-            
+
             complaints: c.chiefComplaint || [],
             menstrual: {
               cycleRegularity: c.menstrualHistory?.cycleRegularity || '',
@@ -119,6 +119,20 @@ export default function OPDNew() {
       return
     }
 
+    if (data.complaints.length === 0 && !data.complaintsNote?.trim()) {
+      alert("At least one Chief Complaint must be selected or entered before saving.")
+      return
+    }
+
+    const g = parseInt(data.obstetric.gravida) || 0
+    const p = parseInt(data.obstetric.para) || 0
+    const a = parseInt(data.obstetric.abortions) || 0
+    if ((p > 0 || a > 0) && g < p + a) {
+      if (!window.confirm("Warning: Para + Abortions exceeds Gravida. Save anyway?")) {
+        return
+      }
+    }
+
     try {
       setSaving(true)
       const payload = {
@@ -165,7 +179,7 @@ export default function OPDNew() {
         await consultationApi.create(payload)
         navigate('/opd')
       }
-    } catch(err) {
+    } catch (err) {
       console.error(err)
       alert('Failed to save consultation. Check console.')
     } finally {
@@ -174,20 +188,20 @@ export default function OPDNew() {
   }
 
   const sectionComponents = [
-    <SectionComplaints    data={data} update={update} />,
-    <SectionMenstrual     data={data} update={update} />,
-    <SectionObstetric     data={data} update={update} />,
-    <SectionSurgical      data={data} update={update} />,
-    <SectionExamination   data={data} update={update} />,
-    <SectionPrescription  data={data} update={update} />,
+    <SectionComplaints data={data} update={update} />,
+    <SectionMenstrual data={data} update={update} />,
+    <SectionObstetric data={data} update={update} />,
+    <SectionSurgical data={data} update={update} />,
+    <SectionExamination data={data} update={update} />,
+    <SectionPrescription data={data} update={update} />,
     <SectionInvestigation data={data} update={update} />,
-    <SectionAdvice        data={data} update={update} />,
+    <SectionAdvice data={data} update={update} />,
   ]
 
   return (
     <div className="page-container">
       <button className={styles.backBtn} onClick={() => navigate(-1)}>
-        <ArrowLeft size={16}/> Back
+        <ArrowLeft size={16} /> Back
       </button>
 
       {/* Patient header strip */}
@@ -199,12 +213,12 @@ export default function OPDNew() {
         </div>
         <div className={styles.dateField}>
           <label>Consultation Date</label>
-          <input type="date" value={data.date}
-            onChange={e => update({ date: e.target.value })}
-            className={styles.dateInput}/>
+          <div className={styles.dateInput} style={{ display: 'flex', alignItems: 'center', cursor: 'default', userSelect: 'none' }}>
+            {new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}
+          </div>
         </div>
         <div className={styles.stripActions}>
-          <Button variant="secondary" icon={Printer} size="sm">Print</Button>
+          {/* <Button variant="secondary" icon={Printer} size="sm">Print</Button> */}
           <Button icon={Save} size="sm" loading={saving}
             onClick={handleSave}>
             Save Consultation
@@ -232,16 +246,16 @@ export default function OPDNew() {
           {sectionComponents[activeSection]}
 
           <div className={styles.formFooter}>
-            <Button variant="secondary" onClick={() => setActiveSection(i => Math.max(0, i-1))}
+            <Button variant="secondary" onClick={() => setActiveSection(i => Math.max(0, i - 1))}
               disabled={activeSection === 0}>
               ← Previous
             </Button>
             {activeSection < SECTIONS.length - 1
-              ? <Button onClick={() => setActiveSection(i => i+1)}>Next →</Button>
+              ? <Button onClick={() => setActiveSection(i => i + 1)}>Next →</Button>
               : <Button icon={Save} loading={saving}
-                  onClick={handleSave}>
-                  Save Consultation
-                </Button>
+                onClick={handleSave}>
+                Save Consultation
+              </Button>
             }
           </div>
         </Card>

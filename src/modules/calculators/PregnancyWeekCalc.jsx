@@ -27,6 +27,7 @@ export default function PregnancyWeekCalc() {
     let daysElapsed, edd
 
     if (form.method === 'Based on LMP' && form.lmp) {
+      if (dayjs(form.lmp).isAfter(today, 'day')) return { error: "LMP cannot be a future date." }
       daysElapsed = today.diff(dayjs(form.lmp), 'day')
       edd = dayjs(form.lmp).add(280, 'day')
     } else if (form.method === 'Based on EDD' && form.edd) {
@@ -52,7 +53,13 @@ export default function PregnancyWeekCalc() {
       icon={Activity}
       color="warning"
       result={result ? (
-        result.overdue ? (
+        result.error ? (
+          <ResultCard>
+            <div style={{padding:'var(--space-6)',textAlign:'center',color:'var(--clr-danger-500)'}}>
+              ⚠ {result.error}
+            </div>
+          </ResultCard>
+        ) : result.overdue ? (
           <ResultCard>
             <div style={{padding:'var(--space-6)',textAlign:'center',color:'var(--clr-danger-500)'}}>
               ⚠ Gestational age &gt;44 weeks. Please verify dates.

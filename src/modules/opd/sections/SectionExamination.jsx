@@ -8,6 +8,23 @@ export default function SectionExamination({ data, update }) {
   const setPV = f => update({ perVaginal:  { ...pv, ...f } })
   const setGE = f => update({ generalExam: { ...ge, ...f } })
 
+  const handleBP = e => {
+    // Strip everything except digits and a single slash
+    let raw = e.target.value.replace(/[^\d/]/g, '')
+    // Only allow one slash
+    const parts = raw.split('/')
+    if (parts.length > 2) raw = parts[0] + '/' + parts.slice(1).join('')
+    // Cap each part to 3 digits
+    const [sys = '', dia = ''] = raw.split('/')
+    const sysClean = sys.slice(0, 3)
+    const diaClean = dia.slice(0, 3)
+    // Auto-insert slash once systolic hits 3 digits and no slash yet
+    let value = raw.includes('/')
+      ? sysClean + '/' + diaClean
+      : sysClean.length === 3 ? sysClean + '/' : sysClean
+    setGE({ bp: value })
+  }
+
   return (
     <div>
       <h2 className={styles.title}>Clinical Examination</h2>
@@ -16,7 +33,7 @@ export default function SectionExamination({ data, update }) {
       <div className={styles.section}>
         <h3 className={styles.sectionTitle}>General Examination</h3>
         <div className={styles.grid4}>
-          <Input label="Blood Pressure" value={ge.bp||''} onChange={e=>setGE({bp:e.target.value})} placeholder="120/80" suffix="mmHg"/>
+          <Input label="Blood Pressure" value={ge.bp||''} onChange={handleBP} placeholder="120/80" suffix="mmHg" inputMode="numeric"/>
           <Input label="Pulse" type="number" value={ge.pulse||''} onChange={e=>setGE({pulse:e.target.value})} placeholder="72" suffix="bpm"/>
           <Input label="Weight" type="number" value={ge.weight||''} onChange={e=>setGE({weight:e.target.value})} placeholder="60" suffix="kg"/>
           <Input label="Height" type="number" value={ge.height||''} onChange={e=>setGE({height:e.target.value})} placeholder="160" suffix="cm"/>

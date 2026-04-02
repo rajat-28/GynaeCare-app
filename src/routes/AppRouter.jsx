@@ -14,6 +14,7 @@ import Billing        from '@modules/billing/Billing'
 import Calculators    from '@modules/calculators/Calculators'
 import Consent        from '@modules/consent/Consent'
 import Engagement     from '@modules/engagement/Engagement'
+import AdminUsers      from '@modules/admin/AdminUsers'
 import AccessDenied   from '@/pages/AccessDenied'
 
 function ProtectedRoute({ children }) {
@@ -50,6 +51,7 @@ function AppRoutes() {
         <Route path="calculators"      element={<ModuleRoute module="calculators"><Calculators /></ModuleRoute>} />
         <Route path="consent/*"        element={<ModuleRoute module="consent"><Consent /></ModuleRoute>} />
         <Route path="engagement/*"     element={<ModuleRoute module="engagement"><Engagement /></ModuleRoute>} />
+        <Route path="admin/users"      element={<ModuleRoute module="admin"><AdminUsers /></ModuleRoute>} />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

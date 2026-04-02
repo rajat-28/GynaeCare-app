@@ -15,7 +15,11 @@ export default function FertileWindowCalc() {
 
   const result = useMemo(() => {
     if (!form.lmp) return null
+    if (dayjs(form.lmp).isAfter(dayjs(), 'day')) return { error: "LMP cannot be a future date." }
+    
     const cycle   = Number(form.cycleLength) || 28
+    if (cycle < 21 || cycle > 45) return { error: "Cycle length must be between 21 and 45 days." }
+    
     const luteal  = Number(form.lutealPhase) || 14
     const ovDay   = cycle - luteal
     const ovDate  = dayjs(form.lmp).add(ovDay, 'day')
@@ -39,9 +43,16 @@ export default function FertileWindowCalc() {
       icon={Heart}
       color="success"
       result={result ? (
-        <ResultCard>
-          <ResultPrimary
-            label="Estimated Ovulation Date"
+        result.error ? (
+          <ResultCard>
+            <div style={{padding:'var(--space-6)',textAlign:'center',color:'var(--clr-danger-500)'}}>
+              ⚠ {result.error}
+            </div>
+          </ResultCard>
+        ) : (
+          <ResultCard>
+            <ResultPrimary
+              label="Estimated Ovulation Date"
             value={result.ovulation}
             sub={`Cycle Day ${result.ovCycleDay}`}
           />
@@ -63,6 +74,7 @@ export default function FertileWindowCalc() {
           <ResultDivider/>
           <ResultDisclaimer text="Estimated only. For irregular cycles, follicular monitoring via ultrasound is recommended." />
         </ResultCard>
+        )
       ) : null}
       onReset={() => setForm(INITIAL)}
       onSave={() => alert('Fertile window saved to EMR!')}

@@ -44,10 +44,63 @@ export default function PatientNew() {
   const [data,    setData]   = useState(INITIAL_DATA)
   const [saving,  setSaving] = useState(false)
   const [error,   setError]  = useState('')
+  const [touched, setTouched] = useState({})
 
-  const update = fields => setData(d => ({ ...d, ...fields }))
+  const update = fields => {
+    setData(d => ({ ...d, ...fields }))
+    // Set touched for updated fields natively, but only if they actually changed
+    setTouched(t => ({ ...t, ...Object.keys(fields).reduce((acc, k) => ({...acc, [k]: true}), {}) }))
+  }
+
+  const handleBlur = field => {
+    setTouched(t => ({ ...t, [field]: true }))
+  }
 
   const CurrentStep = STEPS[step - 1].component
+
+  const errors = {};
+  const todayDate = new Date().toISOString().split('T')[0];
+
+  // Step 1
+  if (touched.firstName && !data.firstName?.trim()) errors.firstName = 'First Name is required.';
+  if (touched.lastName && !data.lastName?.trim()) errors.lastName = 'Last Name is required.';
+  if (touched.dob && !data.dob) errors.dob = 'Date of Birth is required.';
+  if (data.dob && data.dob >= todayDate) errors.dob = 'Date of Birth must be a past date.';
+  if (touched.bloodGroup && !data.bloodGroup) errors.bloodGroup = 'Blood Group is required.';
+  if (touched.gender && !data.gender) errors.gender = 'Gender is required.';
+  if (touched.maritalStatus && !data.maritalStatus) errors.maritalStatus = 'Marital Status is required.';
+  if (touched.phone && !data.phone?.trim()) errors.phone = 'Phone Number is required.';
+  if (data.phone && data.phone.trim() && !/^\d{10}$/.test(data.phone.trim())) errors.phone = 'Must be exactly 10 digits.';
+  if (data.email && data.email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) errors.email = 'Invalid email address.';
+  if (data.aadhaar && data.aadhaar.trim() && !/^\d{12}$/.test(data.aadhaar.trim())) errors.aadhaar = 'Must be exactly 12 digits.';
+  if (data.pin && data.pin.trim() && !/^\d{6}$/.test(data.pin.trim())) errors.pin = 'Must be exactly 6 digits.';
+
+  // Step 2
+  if (data.menarcheAge && (Number(data.menarcheAge) < 8 || Number(data.menarcheAge) > 20)) errors.menarcheAge = 'Range: 8-20 years.';
+  if (data.cycleLength && (Number(data.cycleLength) < 21 || Number(data.cycleLength) > 45)) errors.cycleLength = 'Range: 21-45 days.';
+  if (data.lmp && data.lmp >= todayDate) errors.lmp = 'LMP must be a past date.';
+
+  // Step 3
+  if (data.partnerAge && (Number(data.partnerAge) < 18 || Number(data.partnerAge) > 80)) errors.partnerAge = 'Range: 18-80 years.';
+
+  const handleNext = () => {
+    if (step === 1) {
+      setTouched(t => ({ ...t, firstName: true, lastName: true, dob: true, bloodGroup: true, gender: true, maritalStatus: true, phone: true }));
+      const hasErrors = !data.firstName?.trim() || !data.lastName?.trim() || !data.dob || data.dob >= todayDate || !data.bloodGroup || !data.gender || !data.maritalStatus || !data.phone?.trim() || !/^\d{10}$/.test(data.phone.trim()) || (data.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email.trim())) || (data.aadhaar && !/^\d{12}$/.test(data.aadhaar.trim())) || (data.pin && !/^\d{6}$/.test(data.pin.trim()));
+      if (hasErrors) return setError('Please fix the highlighted fields in Step 1 before continuing.');
+    } else if (step === 2) {
+      if (errors.menarcheAge || errors.cycleLength || errors.lmp) {
+        return setError('Please fix the highlighted fields in Step 2 before continuing.');
+      }
+    } else if (step === 3) {
+      if (errors.partnerAge) {
+        return setError('Please fix the highlighted fields in Step 3 before continuing.');
+      }
+    }
+    
+    setError('');
+    setStep(s => s + 1);
+  };
 
   const handleRegister = async () => {
     setSaving(true)
@@ -162,7 +215,12 @@ export default function PatientNew() {
                 <div
                   key={s.id}
                   className={`${styles.stepItem} ${done ? styles.done : ''} ${current ? styles.current : ''}`}
-                  onClick={() => done && setStep(s.id)}
+                  onClick={() => {
+                    if (done) {
+                      setError('');
+                      setStep(s.id);
+                    }
+                  }}
                 >
                   <div className={styles.stepCircle}>
                     {done ? <Check size={14} strokeWidth={3}/> : <Icon size={15}/>}
@@ -180,19 +238,22 @@ export default function PatientNew() {
         {/* Form area */}
         <div className={styles.formArea}>
           <Card padding="lg">
-            <CurrentStep data={data} update={update}/>
+            <CurrentStep data={data} update={update} errors={errors} onBlur={handleBlur} />
 
             <div className={styles.formFooter}>
               <Button
                 variant="secondary"
                 icon={ArrowLeft}
-                onClick={() => step > 1 ? setStep(s => s - 1) : navigate('/patients')}
+                onClick={() => {
+                  setError('')
+                  step > 1 ? setStep(s => s - 1) : navigate('/patients')
+                }}
               >
                 {step === 1 ? 'Cancel' : 'Back'}
               </Button>
 
               {step < STEPS.length ? (
-                <Button icon={ArrowRight} iconPosition="right" onClick={() => setStep(s => s + 1)}>
+                <Button icon={ArrowRight} iconPosition="right" onClick={handleNext}>
                   Continue
                 </Button>
               ) : (

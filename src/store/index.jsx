@@ -5,7 +5,7 @@ export const ROLE_PERMISSIONS = {
   reception:  ['dashboard','patients','opd','pregnancy','ultrasound','engagement'],
   billing:    ['dashboard','billing'],
   lab:        ['dashboard','ultrasound'],
-  admin:      ['dashboard','patients','opd','pregnancy','ultrasound','reconstructive','fertility','billing','calculators','consent','engagement'],
+  admin:      ['dashboard','patients','opd','pregnancy','ultrasound','reconstructive','fertility','billing','calculators','consent','engagement', 'admin'],
 }
 
 export function canAccess(role, module) {
