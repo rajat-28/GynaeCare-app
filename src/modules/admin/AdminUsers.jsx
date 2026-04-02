@@ -155,9 +155,9 @@ export default function AdminUsers() {
               <div className={styles.formGrid}>
                 <Input label="Full Name" required value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
                 <Input label="Email Address" type="email" required value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-                {/* <Input label={editingUser ? "Password (leave blank to keep current)" : "Password"}
+                <Input label={editingUser ? "Password (leave blank to keep current)" : "Password"}
                   type="password" required={!editingUser}
-                  value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} /> */}
+                  value={form.password} onChange={e => setForm({ ...form, password: e.target.value })} />
                 <Select label="Role" options={ROLES} value={form.role} onChange={e => setForm({ ...form, role: e.target.value })} />
                 <Input label="Specialization (Optional)" value={form.specialization} onChange={e => setForm({ ...form, specialization: e.target.value })} />
               </div>
