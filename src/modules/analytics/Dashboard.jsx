@@ -76,7 +76,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     if (user?.id) {
-      analyticsApi.getDashboardStats(user.id)
+      // Only filter by doctorId if the user is actually a doctor
+      const doctorId = user.role === 'doctor' ? user.id : undefined
+      analyticsApi.getDashboardStats(doctorId)
         .then(res => {
           setStats(res.data?.response || res.data)
           setLoading(false)
@@ -88,7 +90,8 @@ export default function Dashboard() {
     } else {
       setLoading(false)
     }
-  }, [user?.id])
+  }, [user?.id, user?.role])
+
 
   const today = new Date().toLocaleDateString('en-IN', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'

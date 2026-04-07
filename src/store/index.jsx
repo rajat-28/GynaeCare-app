@@ -1,11 +1,11 @@
 import { createContext, useContext, useState } from 'react'
 
 export const ROLE_PERMISSIONS = {
-  doctor:     ['dashboard','patients','opd','pregnancy','ultrasound','reconstructive','fertility','billing','calculators','consent','engagement'],
-  reception:  ['dashboard','patients','opd','pregnancy','ultrasound','engagement'],
-  billing:    ['dashboard','billing'],
-  lab:        ['dashboard','ultrasound'],
-  admin:      ['dashboard','patients','opd','pregnancy','ultrasound','reconstructive','fertility','billing','calculators','consent','engagement', 'admin'],
+  doctor: ['dashboard', 'patients', 'opd', 'pregnancy', 'ultrasound', 'reconstructive', 'fertility', 'billing', 'calculators', 'consent', 'engagement'],
+  reception: ['patients', 'opd', 'pregnancy', 'ultrasound', 'reconstructive', 'engagement', 'lab'],
+  billing: ['dashboard', 'billing'],
+  lab: ['dashboard', 'ultrasound', 'lab'],
+  admin: ['dashboard', 'patients', 'opd', 'pregnancy', 'ultrasound', 'reconstructive', 'fertility', 'billing', 'calculators', 'consent', 'engagement', 'admin'],
 }
 
 export function canAccess(role, module) {
@@ -14,31 +14,39 @@ export function canAccess(role, module) {
 
 // Maps backend role strings to display labels
 const ROLE_LABELS = {
-  doctor:     'Doctor',
+  doctor: 'Doctor',
   gynaecologist: 'Gynaecologist',
-  obstetrician:  'Obstetrician',
-  reception:  'Receptionist',
+  obstetrician: 'Obstetrician',
+  reception: 'Receptionist',
   receptionist: 'Receptionist',
-  billing:    'Billing Staff',
+  billing: 'Billing Staff',
   billing_staff: 'Billing Staff',
-  lab:        'Lab Technician',
+  lab: 'Lab Technician',
   lab_technician: 'Lab Technician',
-  admin:      'Admin',
+  admin: 'Admin',
   clinic_admin: 'Clinic Admin',
 }
 
 // Normalize user object from backend into consistent shape
 function normalizeUser(raw) {
   if (!raw) return null
-  const role = (raw.role || raw.userRole || raw.user_role || '').toLowerCase()
+  let role = (raw.role || raw.userRole || raw.user_role || '').toLowerCase()
+
+  // Map backend variations to canonical frontend roles
+  if (role === 'receptionist') role = 'reception'
+  if (role === 'billing_staff') role = 'billing'
+  if (role === 'lab_technician') role = 'lab'
+  if (role === 'clinic_admin') role = 'admin'
+
   return {
-    id:        raw.id || raw._id || raw.userId,
-    name:      raw.name || raw.fullName || raw.full_name || raw.firstName || 'User',
-    email:     raw.email,
-    role:      role,
+    id: raw.id || raw._id || raw.userId,
+    name: raw.name || raw.fullName || raw.full_name || raw.firstName || 'User',
+    email: raw.email,
+    role: role,
     roleLabel: raw.roleLabel || ROLE_LABELS[role] || role,
   }
 }
+
 
 const AuthContext = createContext(null)
 

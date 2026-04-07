@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { AuthProvider, useAuth, canAccess } from '@/store/index'
+import { AuthProvider, useAuth, canAccess, ROLE_PERMISSIONS } from '@/store/index'
 import MainLayout    from '@components/layout/MainLayout'
 import Login         from '@/pages/Login'
 
@@ -24,7 +24,8 @@ function ProtectedRoute({ children }) {
 
 function PublicRoute({ children }) {
   const { user } = useAuth()
-  return user ? <Navigate to="/dashboard" replace /> : children
+  const firstModule = ROLE_PERMISSIONS[user?.role]?.[0] || 'dashboard'
+  return user ? <Navigate to={`/${firstModule}`} replace /> : children
 }
 
 function ModuleRoute({ module, children }) {
@@ -33,12 +34,15 @@ function ModuleRoute({ module, children }) {
 }
 
 function AppRoutes() {
+  const { user } = useAuth()
+  const firstModule = ROLE_PERMISSIONS[user?.role]?.[0] || 'dashboard'
+
   return (
     <Routes>
       <Route path="/login" element={<PublicRoute><Login /></PublicRoute>}/>
 
       <Route path="/" element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
-        <Route index element={<Navigate to="/dashboard" replace />} />
+        <Route index element={<Navigate to={`/${firstModule}`} replace />} />
 
         <Route path="dashboard"        element={<ModuleRoute module="dashboard"><Dashboard /></ModuleRoute>} />
         <Route path="patients/*"       element={<ModuleRoute module="patients"><Patients /></ModuleRoute>} />
@@ -54,10 +58,11 @@ function AppRoutes() {
         <Route path="admin/users"      element={<ModuleRoute module="admin"><AdminUsers /></ModuleRoute>} />
       </Route>
 
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to={`/${firstModule}`} replace />} />
     </Routes>
   )
 }
+
 
 export default function AppRouter() {
   return (
